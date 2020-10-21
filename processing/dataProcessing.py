@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from PIL import Image
 import progressbar
+import xml.etree.ElementTree as ET
 
 data_path = "/home/sander/dev/ML_Project/data/"
 annotations_path = data_path + "archive/annotations/Annotation/"
@@ -13,12 +14,12 @@ def get_paths(trainingData, trainingDataCount):
     paths = []
     dirs = os.listdir(annotations_path)
     # Tak only part of the data as training or test data
-    if (trainingData):
-        dirs = dirs[:trainingDataCount]
-    else:
-        dirs = dirs[trainingDataCount:]
     for dir in dirs:
         files = os.listdir(annotations_path + dir)
+        if (trainingData):
+            files = files[:trainingDataCount]
+        else:
+            files = files[trainingDataCount:]
         for file in files:
             paths.append(dir + "/" + file)
     return paths
@@ -40,26 +41,36 @@ def pad_array(data, max_length):
     return np.asanyarray(updated_data)
 
 
-def read_images(paths):
+def read_images(paths, image_size):
     print("Read images")
     images = []
-    max_length = 0
+    labels = []
     for path_i in progressbar.progressbar(range(len(paths))):
+        # Data
         image = Image.open(image_path + paths[path_i] + ".jpg")
-        data = np.asanyarray(image).flatten()
-        max_length = len(data) if max_length < len(data) else max_length
-        images.append(data)
-    return np.asanyarray(images), max_length
+        image.resize(image_size)
+        image_data = np.asanyarray(image)
+        images.append(image_data)
+        # Label
+        doc = doc1 = ET.parse(annotations_path + paths[path_i])
+        root = doc.getroot()
+        for element in root.findall("object"):
+            label = element.find("name").text
+            labels.append(label)
+            continue
+
+    return np.asanyarray(images), np.asanyarray(labels)
     
 
 # Convert images from jpg to csv file
-def convert_images(trainingData=True, trainingDataCount=10):
-    paths = get_paths(trainingData, trainingDataCount)
+def load_data(training_data=True, data_count=0.7, image_size=(32,32)):
+    paths = get_paths(training_data, data_count)
     # Read images from dish
-    images, max_length = read_images(paths)
+    data, labels = read_images(paths, image_size)
     # Pad image arrays
     # images = pad_array(images, max_length)
-    return images
+    print(labels)
+    return data, labels
 
 
-convert_images(True, 5)
+load_data(True, 2)
