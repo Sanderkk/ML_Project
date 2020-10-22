@@ -4,6 +4,7 @@ import pandas as pd
 from PIL import Image
 import progressbar
 import xml.etree.ElementTree as ET
+import math
 
 data_path = "/home/sander/dev/ML_Project/data/"
 annotations_path = data_path + "archive/annotations/Annotation/"
@@ -16,12 +17,15 @@ def get_paths(trainingData, trainingDataCount):
     # Tak only part of the data as training or test data
     for dir in dirs:
         files = os.listdir(annotations_path + dir)
+        files_count = len(files)
+        selected_files = 10
         if (trainingData):
-            files = files[:trainingDataCount]
+            files = files[:selected_files]
         else:
-            files = files[trainingDataCount:]
+            files = files[selected_files:]
         for file in files:
             paths.append(dir + "/" + file)
+    print("The data paths were found")
     return paths
 
 
@@ -45,11 +49,14 @@ def read_images(paths, image_size):
     print("Read images")
     images = []
     labels = []
+    # Image "n02105855-Shetland_sheepdog/n02105855_2933" is fucked! RGBA
     for path_i in progressbar.progressbar(range(len(paths))):
         # Data
         image = Image.open(image_path + paths[path_i] + ".jpg")
-        image.resize(image_size)
+        image = image.resize(image_size)
         image_data = np.asanyarray(image)
+        if image_data.shape != (32,32,3):
+            print(image_data.shape, paths[path_i])
         images.append(image_data)
         # Label
         doc = doc1 = ET.parse(annotations_path + paths[path_i])
@@ -57,20 +64,18 @@ def read_images(paths, image_size):
         for element in root.findall("object"):
             label = element.find("name").text
             labels.append(label)
-            continue
-
+            break
+    print("The data was loaded")
     return np.asanyarray(images), np.asanyarray(labels)
     
 
 # Convert images from jpg to csv file
-def load_data(training_data=True, data_count=0.7, image_size=(32,32)):
+def load_data(training_data=True, data_count=0.8, image_size=(32,32)):
     paths = get_paths(training_data, data_count)
-    # Read images from dish
+    # Read images and labels from disk
     data, labels = read_images(paths, image_size)
-    # Pad image arrays
-    # images = pad_array(images, max_length)
-    print(labels)
     return data, labels
 
-
-load_data(True, 2)
+if __name__ == "__main__":
+    training_data, training_labels = load_data(True, 0.8, (32,32))
+    test_data, test_labels = load_data(False, 0.8, (32,32))

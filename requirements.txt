@@ -2,3 +2,7 @@ numpy
 pandas
 Pillow
 progressbar2
+xml
+tensorflow
+keras
+matplotlib
