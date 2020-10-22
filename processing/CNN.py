@@ -49,6 +49,7 @@ if __name__ == "__main__":
     training_data = normalize_data(training_data)
     test_data, test_labels = load_data(False, 0.8, (32,32))
     test_labels = [ label_names.index(x) for x in test_labels]
+    test_data = normalize_data(test_data)
     # Create model
     model = create_model(len(training_labels))
     # Fit model

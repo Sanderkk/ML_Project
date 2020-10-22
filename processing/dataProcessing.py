@@ -18,20 +18,18 @@ def get_paths(trainingData, trainingDataCount):
     for dir in dirs:
         files = os.listdir(annotations_path + dir)
         files_count = len(files)
-        selected_files = 10
+        selected_files = math.floor( files_count * trainingDataCount )
         if (trainingData):
             files = files[:selected_files]
         else:
             files = files[selected_files:]
         for file in files:
             paths.append(dir + "/" + file)
-    print("The data paths were found")
     return paths
 
 
 # This is slow as fuck. Uses a lot of ram
 def pad_array(data, max_length):
-    print("Pad arrays")
     updated_data = []
     for i in progressbar.progressbar(range(len(data))):
         updated_data.append(
@@ -46,7 +44,6 @@ def pad_array(data, max_length):
 
 
 def read_images(paths, image_size):
-    print("Read images")
     images = []
     labels = []
     # Image "n02105855-Shetland_sheepdog/n02105855_2933" is fucked! RGBA
@@ -65,9 +62,19 @@ def read_images(paths, image_size):
             label = element.find("name").text
             labels.append(label)
             break
-    print("The data was loaded")
     return np.asanyarray(images), np.asanyarray(labels)
     
+
+# TODO: Solve this
+def convert_images_rgb():
+    image_pahts = ["n02105855-Shetland_sheepdog/n02105855_2933"]
+    for path in image_pahts:
+        image = Image.open(image_path + path + ".jpg")
+        image.load() # required for png.split()
+        background = Image.new("RGB", image.size, (255, 255, 255))
+        background.paste(image, mask=image.split()[3]) # 3 is the alpha channel
+        background.save(image_path + path + ".jpg", 'jpg', quality=80)
+
 
 # Convert images from jpg to csv file
 def load_data(training_data=True, data_count=0.8, image_size=(32,32)):
@@ -79,3 +86,4 @@ def load_data(training_data=True, data_count=0.8, image_size=(32,32)):
 if __name__ == "__main__":
     training_data, training_labels = load_data(True, 0.8, (32,32))
     test_data, test_labels = load_data(False, 0.8, (32,32))
+    #convert_images_rgb()
