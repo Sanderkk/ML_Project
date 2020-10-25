@@ -5,10 +5,10 @@ from PIL import Image
 import progressbar
 import xml.etree.ElementTree as ET
 import math
+from CONFIG import DATA_PATH
 
-data_path = "/home/sander/dev/ML_Project/data/"
-annotations_path = data_path + "archive/annotations/Annotation/"
-image_path = data_path + "archive/images/Images/"
+annotations_path = DATA_PATH + "archive/annotations/Annotation/"
+image_path = DATA_PATH + "archive/images/Images/"
 
 
 def get_paths(trainingData, trainingDataCount):
@@ -48,20 +48,26 @@ def read_images(paths, image_size):
     labels = []
     # Image "n02105855-Shetland_sheepdog/n02105855_2933" is fucked! RGBA
     for path_i in progressbar.progressbar(range(len(paths))):
-        # Data
-        image = Image.open(image_path + paths[path_i] + ".jpg")
-        image = image.resize(image_size)
-        image_data = np.asanyarray(image)
-        if image_data.shape != (32,32,3):
-            print(image_data.shape, paths[path_i])
-        images.append(image_data)
         # Label
         doc = doc1 = ET.parse(annotations_path + paths[path_i])
         root = doc.getroot()
         for element in root.findall("object"):
             label = element.find("name").text
             labels.append(label)
+            bndbox = element.find("bndbox")
+            x_min = int(bndbox.find("xmin").text)
+            x_max = int(bndbox.find("xmax").text)
+            y_min = int(bndbox.find("ymin").text)
+            y_max = int(bndbox.find("ymax").text)
             break
+        # Data
+        image = Image.open(image_path + paths[path_i] + ".jpg")
+        image = image.crop((x_min, y_min, x_max, y_max))
+        image = image.resize(image_size)
+        image_data = np.asanyarray(image)
+        if image_data.shape != (image_size[0], image_size[1], 3):
+            print(image_data.shape, paths[path_i])
+        images.append(image_data)
     return np.asanyarray(images), np.asanyarray(labels)
     
 
@@ -77,7 +83,7 @@ def convert_images_rgb():
 
 
 # Convert images from jpg to csv file
-def load_data(training_data=True, data_count=0.8, image_size=(32,32)):
+def load_data(training_data=True, data_count=0.8, image_size=(32, 32)):
     paths = get_paths(training_data, data_count)
     # Read images and labels from disk
     data, labels = read_images(paths, image_size)
