@@ -5,91 +5,130 @@ from PIL import Image
 import progressbar
 import xml.etree.ElementTree as ET
 import math
-from CONFIG import DATA_PATH
+from CONFIG import DATA_PATH, CLASS_COUNT, TRAINING_SET_SIZE, IMAGE_SIZE
 
-annotations_path = DATA_PATH + "archive/annotations/Annotation/"
-image_path = DATA_PATH + "archive/images/Images/"
+# example of saving an image with the Keras API
+from keras.preprocessing.image import load_img
+from keras.preprocessing.image import save_img
+from keras.preprocessing.image import img_to_array
+from numpy import expand_dims
+from keras.preprocessing.image import ImageDataGenerator
 
+ANNOTATIONS_PATH = DATA_PATH + "archive/annotations/Annotation/"
+IMAGE_DATA_PATH = DATA_PATH + "archive/images/Images/"
+PROCESSED_ANNOTATIONS_PATH = DATA_PATH + "processed/annotations/"
+PROCESSED_IMAGE_PATH = DATA_PATH + "processed/images/"
 
-def get_paths(trainingData, trainingDataCount):
-    paths = []
-    dirs = os.listdir(annotations_path)
+def get_file_paths(training_data=True, training_set_size=TRAINING_SET_SIZE, data_path=ANNOTATIONS_PATH):
+    paths = {}
+    dirs = os.listdir(data_path)
     # Tak only part of the data as training or test data
-    for dir in dirs:
-        files = os.listdir(annotations_path + dir)
+    for dir in dirs[:CLASS_COUNT]:
+        paths[dir] = []
+        files = os.listdir(data_path + dir)
         files_count = len(files)
-        selected_files = math.floor( files_count * trainingDataCount )
-        if (trainingData):
+        selected_files = math.floor( files_count * training_set_size )
+        if (training_data):
             files = files[:selected_files]
         else:
             files = files[selected_files:]
         for file in files:
-            paths.append(dir + "/" + file)
+            paths[dir].append(file)
     return paths
 
 
-# This is slow as fuck. Uses a lot of ram
-def pad_array(data, max_length):
-    updated_data = []
-    for i in progressbar.progressbar(range(len(data))):
-        updated_data.append(
-            np.pad(
-                data,
-                (0, max_length - len(data)),
-                "constant",
-                constant_values=(0,0)
-                )
-        )
-    return np.asanyarray(updated_data)
+def read_label_contents_image_box(label_file):
+    root = label_file.getroot()
+    element = root.find("object")
+    bndbox = element.find("bndbox")
+    x_min = int(bndbox.find("xmin").text)
+    x_max = int(bndbox.find("xmax").text)
+    y_min = int(bndbox.find("ymin").text)
+    y_max = int(bndbox.find("ymax").text)
+    return x_min, x_max, y_min, y_max
+
+def get_annotation_label(label_file):
+    root = label_file.getroot()
+    element = root.find("object")
+    label = element.find("name").text
+    return label
+
+# https://machinelearningmastery.com/how-to-configure-image-data-augmentation-when-training-deep-learning-neural-networks/
+def image_generation(label_doc, image, dir_path, path):
+    img_array = img_to_array(image)
+
+    # expand dimension to one sample
+    samples = expand_dims(img_array, 0)
+    # create image data augmentation generator
+    datagen = ImageDataGenerator(rotation_range=90)
+    # prepare iterator
+    it = datagen.flow(samples, batch_size=1)
+    # generate samples and plot
+    for i in range(9):
+        # generate batch of images
+        batch = it.next()
+        image_data = batch[0].astype('uint8')
+        save_img(PROCESSED_IMAGE_PATH + dir_path + "/" + path + str(i) + ".jpg", image_data)
+        label_doc.write(PROCESSED_ANNOTATIONS_PATH + dir_path + "/" + path + str(i))
 
 
-def read_images(paths, image_size):
+def resize_images(paths):
+    for dir_path, image_path in paths.items():
+        os.mkdir(PROCESSED_ANNOTATIONS_PATH + dir_path)
+        os.mkdir(PROCESSED_IMAGE_PATH + dir_path)
+        for i in progressbar.progressbar(range(len(image_path))):
+            path = image_path[i]
+            # Get label
+            doc = ET.parse(ANNOTATIONS_PATH + dir_path + "/" + path)
+            x_min, x_max, y_min, y_max = read_label_contents_image_box(doc)
+            # Image
+            image = Image.open(IMAGE_DATA_PATH + dir_path + "/" + path + ".jpg")
+            image = image.crop((x_min, y_min, x_max, y_max))
+            image = image.convert('RGB')  # The one RGBA image
+            image = image.resize(IMAGE_SIZE)
+            # Generate more data with image augmentation
+            image_generation(doc, image, dir_path, path)
+            image.save(PROCESSED_IMAGE_PATH + dir_path + "/" + path + ".jpg")
+            doc.write(PROCESSED_ANNOTATIONS_PATH + dir_path + "/" + path)
+
+def read_data(paths, annotations_path, image_file_path, preprocessed=True):
     images = []
     labels = []
-    # Image "n02105855-Shetland_sheepdog/n02105855_2933" is fucked! RGBA
-    for path_i in progressbar.progressbar(range(len(paths))):
-        # Label
-        doc = doc1 = ET.parse(annotations_path + paths[path_i])
-        root = doc.getroot()
-        for element in root.findall("object"):
-            label = element.find("name").text
-            labels.append(label)
-            bndbox = element.find("bndbox")
-            x_min = int(bndbox.find("xmin").text)
-            x_max = int(bndbox.find("xmax").text)
-            y_min = int(bndbox.find("ymin").text)
-            y_max = int(bndbox.find("ymax").text)
-            break
-        # Data
-        image = Image.open(image_path + paths[path_i] + ".jpg")
-        image = image.crop((x_min, y_min, x_max, y_max))
-        image = image.resize(image_size)
-        image_data = np.asanyarray(image)
-        if image_data.shape != (image_size[0], image_size[1], 3):
-            print(image_data.shape, paths[path_i])
-        images.append(image_data)
+    for dir_path, image_path in paths.items():
+        for i in progressbar.progressbar(range(len(image_path))):
+            path = image_path[i]
+            # Get label
+            doc = ET.parse(annotations_path + dir_path + "/" + path)
+            labels.append(get_annotation_label(doc))
+            image = Image.open(image_file_path + dir_path + "/" + path + ".jpg")
+            if not preprocessed:
+                image = image.resize(IMAGE_SIZE)
+            image_data = np.asanyarray(image)
+            images.append(image_data)
     return np.asanyarray(images), np.asanyarray(labels)
-    
-
-# TODO: Solve this
-def convert_images_rgb():
-    image_pahts = ["n02105855-Shetland_sheepdog/n02105855_2933"]
-    for path in image_pahts:
-        image = Image.open(image_path + path + ".jpg")
-        image.load() # required for png.split()
-        background = Image.new("RGB", image.size, (255, 255, 255))
-        background.paste(image, mask=image.split()[3]) # 3 is the alpha channel
-        background.save(image_path + path + ".jpg", 'jpg', quality=80)
 
 
-# Convert images from jpg to csv file
-def load_data(training_data=True, data_count=0.8, image_size=(32, 32)):
-    paths = get_paths(training_data, data_count)
-    # Read images and labels from disk
-    data, labels = read_images(paths, image_size)
+"""
+https://www.tensorflow.org/guide/gpu#limiting_gpu_memory_growth
+
+https://www.kaggle.com/hengzheng/dog-breeds-classifier
+https://machinelearningmastery.com/how-to-configure-image-data-augmentation-when-training-deep-learning-neural-networks/
+https://medium.com/@sourav_srv_bhattacharyya/image-augmentation-to-build-a-powerful-image-classification-model-3303e40af7b0
+"""
+
+def generate_data():
+    paths = get_file_paths(training_set_size=0.92)
+    resize_images(paths)
+
+def read_training_data():
+    paths = get_file_paths(training_set_size=0.92, data_path=ANNOTATIONS_PATH)
+    data, labels = read_data(paths, ANNOTATIONS_PATH, IMAGE_DATA_PATH, preprocessed=False)
+    return data, labels
+
+def read_test_data():
+    paths = get_file_paths(training_data=False, training_set_size=0.92, data_path=ANNOTATIONS_PATH)
+    data, labels = read_data(paths, ANNOTATIONS_PATH, IMAGE_DATA_PATH, preprocessed=False)
     return data, labels
 
 if __name__ == "__main__":
-    training_data, training_labels = load_data(True, 0.8, (32,32))
-    test_data, test_labels = load_data(False, 0.8, (32,32))
-    #convert_images_rgb()
+    generate_data()
