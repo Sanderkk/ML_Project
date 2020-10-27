@@ -102,6 +102,9 @@ def read_data(paths, annotations_path, image_file_path, preprocessed=True):
             labels.append(get_annotation_label(doc))
             image = Image.open(image_file_path + dir_path + "/" + path + ".jpg")
             if not preprocessed:
+                x_min, x_max, y_min, y_max = read_label_contents_image_box(doc)
+                image = image.crop((x_min, y_min, x_max, y_max))
+                image = image.convert('RGB')  # The one RGBA image
                 image = image.resize(IMAGE_SIZE)
             image_data = np.asanyarray(image)
             images.append(image_data)

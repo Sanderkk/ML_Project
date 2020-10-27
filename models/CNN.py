@@ -14,23 +14,35 @@ def create_model(classes_count, image_size_size):
     # model.add(layers.BatchNormalization(input_shape=(64, 64, 3)))
     model.add(layers.Conv2D(image_size_size[0], (3, 3), activation='relu',
                             input_shape=(image_size_size[0], image_size_size[1], 3)))
+    model.add(layers.MaxPooling2D(pool_size=(3,3), strides=(2,2)))
     model.add(layers.BatchNormalization())
+
+    model.add(layers.Conv2D(256, (5, 5), activation='relu'))
     model.add(layers.MaxPooling2D((2, 2)))
-    model.add(layers.Dropout(0.3))
-    model.add(layers.Conv2D(255, (3, 3), activation='relu'))
     model.add(layers.BatchNormalization())
-    model.add(layers.MaxPooling2D((2, 2)))
-    model.add(layers.Dropout(0.3))
-    model.add(layers.Conv2D(255, (3, 3), activation='relu'))
+
+    model.add(layers.Conv2D(384, (3, 3), activation='relu'))
+
+    model.add(layers.Conv2D(384, (3, 3), activation='relu'))
+
+    model.add(layers.Conv2D(256, (3, 3), activation='relu'))
+    model.add(layers.MaxPooling2D(pool_size=(3, 3), strides=(2, 2)))
     model.add(layers.BatchNormalization())
-    model.add(layers.MaxPooling2D((2, 2)))
-    model.add(layers.Dropout(0.3))
-    model.add(layers.Conv2D(255, (3, 3), activation='relu'))
+
     model.add(layers.Flatten())
-    model.add(layers.Dense(128, activation='relu'))
-    model.add(layers.Dropout(0.5))
-    model.add(layers.Dense(254, activation='relu'))
-    model.add(layers.Dropout(0.5))
+
+    model.add(layers.Dense(2048, activation='relu'))
+    model.add(layers.Dropout(0.4))
+    model.add(layers.BatchNormalization())
+
+    model.add(layers.Dense(1000, activation='relu'))
+    model.add(layers.Dropout(0.4))
+    model.add(layers.BatchNormalization())
+
+    model.add(layers.Dense(1000, activation='relu'))
+    model.add(layers.Dropout(0.4))
+    model.add(layers.BatchNormalization())
+
     model.add(layers.Dense(classes_count, activation='softmax'))
     model.summary()
     return model
