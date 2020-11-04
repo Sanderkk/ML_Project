@@ -5,7 +5,7 @@ from PIL import Image
 import progressbar
 import xml.etree.ElementTree as ET
 import math
-from CONFIG import DATA_PATH, CLASS_COUNT, TRAINING_SET_SIZE, IMAGE_SIZE
+from CONFIG import *
 
 # example of saving an image with the Keras API
 from keras.preprocessing.image import load_img
@@ -13,13 +13,17 @@ from keras.preprocessing.image import save_img
 from keras.preprocessing.image import img_to_array
 from numpy import expand_dims
 from keras.preprocessing.image import ImageDataGenerator
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
+import matplotlib.pyplot as plt
 
 ANNOTATIONS_PATH = DATA_PATH + "archive/annotations/Annotation/"
 IMAGE_DATA_PATH = DATA_PATH + "archive/images/Images/"
 PROCESSED_ANNOTATIONS_PATH = DATA_PATH + "processed/annotations/"
 PROCESSED_IMAGE_PATH = DATA_PATH + "processed/images/"
 
-def get_file_paths(training_data=True, training_set_size=TRAINING_SET_SIZE, data_path=ANNOTATIONS_PATH):
+def get_file_paths(training_data=True, validation=False, validation_split=0.2, training_set_size=TRAINING_SET_SIZE, data_path=ANNOTATIONS_PATH):
     paths = {}
     dirs = os.listdir(data_path)
     # Tak only part of the data as training or test data
@@ -29,7 +33,11 @@ def get_file_paths(training_data=True, training_set_size=TRAINING_SET_SIZE, data
         files_count = len(files)
         selected_files = math.floor( files_count * training_set_size )
         if (training_data):
-            files = files[:selected_files]
+            validation_marker = math.floor( selected_files * validation_split )
+            if (validation):
+                files = files[validation_marker:selected_files]
+            else:
+                files = files[:(selected_files - validation_marker)]
         else:
             files = files[selected_files:]
         for file in files:
@@ -60,7 +68,12 @@ def image_generation(label_doc, image, dir_path, path):
     # expand dimension to one sample
     samples = expand_dims(img_array, 0)
     # create image data augmentation generator
-    datagen = ImageDataGenerator(rotation_range=90)
+    datagen = ImageDataGenerator(
+        rotation_range=90,
+        rescale=1. / 255,
+        shear_range=0.2,
+        horizontal_flip=True
+    )
     # prepare iterator
     it = datagen.flow(samples, batch_size=1)
     # generate samples and plot
@@ -69,7 +82,7 @@ def image_generation(label_doc, image, dir_path, path):
         batch = it.next()
         image_data = batch[0].astype('uint8')
         save_img(PROCESSED_IMAGE_PATH + dir_path + "/" + path + str(i) + ".jpg", image_data)
-        label_doc.write(PROCESSED_ANNOTATIONS_PATH + dir_path + "/" + path + str(i))
+        # label_doc.write(PROCESSED_ANNOTATIONS_PATH + dir_path + "/" + path + str(i))
 
 
 def resize_images(paths):
@@ -89,7 +102,7 @@ def resize_images(paths):
             # Generate more data with image augmentation
             image_generation(doc, image, dir_path, path)
             image.save(PROCESSED_IMAGE_PATH + dir_path + "/" + path + ".jpg")
-            doc.write(PROCESSED_ANNOTATIONS_PATH + dir_path + "/" + path)
+            # doc.write(PROCESSED_ANNOTATIONS_PATH + dir_path + "/" + path)
 
 def read_data(paths, annotations_path, image_file_path, preprocessed=True):
     images = []
@@ -108,6 +121,7 @@ def read_data(paths, annotations_path, image_file_path, preprocessed=True):
                 image = image.resize(IMAGE_SIZE)
             image_data = np.asanyarray(image)
             images.append(image_data)
+            #print(dir_path+"/"+path, get_annotation_label(doc))
     return np.asanyarray(images), np.asanyarray(labels)
 
 
@@ -120,18 +134,36 @@ https://medium.com/@sourav_srv_bhattacharyya/image-augmentation-to-build-a-power
 """
 
 def generate_data():
-    paths = get_file_paths(training_set_size=0.92)
+    paths = get_file_paths(training_set_size=TRAINING_SET_SIZE, validation_split=0)
     resize_images(paths)
 
-def read_training_data():
-    paths = get_file_paths(training_set_size=0.92, data_path=ANNOTATIONS_PATH)
-    data, labels = read_data(paths, ANNOTATIONS_PATH, IMAGE_DATA_PATH, preprocessed=False)
-    return data, labels
+def read_training_set():
+    paths = get_file_paths(training_set_size=TRAINING_SET_SIZE, validation_split=VALIDATION_SET_SIZE, data_path=ANNOTATIONS_PATH)
+    data, targets = read_data(paths, ANNOTATIONS_PATH, IMAGE_DATA_PATH, preprocessed=False)
+    training_set = tf.keras.preprocessing.timeseries_dataset_from_array(
+        data, targets, len(data), sequence_stride=1, sampling_rate=1,
+        batch_size=BATCH_SIZE, shuffle=False, seed=None, start_index=None, end_index=None
+    )
+    return training_set
 
-def read_test_data():
-    paths = get_file_paths(training_data=False, training_set_size=0.92, data_path=ANNOTATIONS_PATH)
-    data, labels = read_data(paths, ANNOTATIONS_PATH, IMAGE_DATA_PATH, preprocessed=False)
-    return data, labels
+def read_validation_set():
+    paths = get_file_paths(training_set_size=TRAINING_SET_SIZE, validation=True, validation_split=VALIDATION_SET_SIZE, data_path=ANNOTATIONS_PATH)
+    data, targets = read_data(paths, ANNOTATIONS_PATH, IMAGE_DATA_PATH, preprocessed=False)
+    training_set = tf.keras.preprocessing.timeseries_dataset_from_array(
+        data, targets, len(data), sequence_stride=1, sampling_rate=1,
+        batch_size=BATCH_SIZE, shuffle=False, seed=None, start_index=None, end_index=None
+    )
+    return training_set
+
+def read_test_set():
+    paths = get_file_paths(training_data=False, training_set_size=TRAINING_SET_SIZE, data_path=ANNOTATIONS_PATH)
+    data, targets = read_data(paths, ANNOTATIONS_PATH, IMAGE_DATA_PATH, preprocessed=False)
+    training_set = tf.keras.preprocessing.timeseries_dataset_from_array(
+        data, targets, len(data), sequence_stride=1, sampling_rate=1,
+        batch_size=BATCH_SIZE, shuffle=False, seed=None, start_index=None, end_index=None
+    )
+    return training_set
+
 
 if __name__ == "__main__":
     generate_data()
