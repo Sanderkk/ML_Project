@@ -1,4 +1,5 @@
 import tensorflow as tf
+from keras_preprocessing.image import ImageDataGenerator
 
 from tensorflow.keras import datasets, layers, models, applications, optimizers
 from tensorflow import keras
@@ -43,15 +44,15 @@ def create_model(input_shape, activation='softmax', data_augmentation=None):
 
     inputs = keras.Input(shape=input_shape)
     # Image augmentation block
-    x = data_augmentation(inputs)
+    #x = data_augmentation(inputs)
 
     # Entry block
-    x = layers.experimental.preprocessing.Rescaling(1.0 / 255)(x)
+    x = layers.experimental.preprocessing.Rescaling(1.0 / 255)(inputs)
     x = layers.Conv2D(64, 3, strides=2, padding="same")(x)
     x = layers.BatchNormalization()(x)
     x = layers.Activation("relu")(x)
 
-    #x = layers.Dropout(0.5)(x)
+    x = layers.Dropout(0.5)(x)
 
     x = layers.Conv2D(128, 3, padding="same")(x)
     x = layers.BatchNormalization()(x)
@@ -60,7 +61,7 @@ def create_model(input_shape, activation='softmax', data_augmentation=None):
     previous_block_activation = x  # Set aside residual
 
     for size in [128, 256, 512, 728, 728, 728]:
-        #x = layers.Dropout(0.25)(x)
+        x = layers.Dropout(0.25)(x)
         x = layers.Activation("relu")(x)
         x = layers.SeparableConv2D(size, 3, padding="same")(x)
         x = layers.BatchNormalization()(x)
@@ -71,7 +72,7 @@ def create_model(input_shape, activation='softmax', data_augmentation=None):
         x = layers.BatchNormalization()(x)
 
         x = layers.MaxPooling2D(3, strides=2, padding="same")(x)
-        #x = layers.Dropout(0.5)(x)
+        x = layers.Dropout(0.5)(x)
         # Project residual
         residual = layers.Conv2D(size, 1, strides=2, padding="same")(
             previous_block_activation
@@ -79,7 +80,7 @@ def create_model(input_shape, activation='softmax', data_augmentation=None):
         x = layers.add([x, residual])  # Add back residual
         previous_block_activation = x  # Set aside next residual
 
-    # x = layers.Dropout(0.5)(x)
+    x = layers.Dropout(0.5)(x)
     x = layers.SeparableConv2D(1024, 3, padding="same")(x)
     x = layers.BatchNormalization()(x)
     x = layers.Activation("relu")(x)
@@ -132,12 +133,8 @@ def convert_labels(training_labels, test_labels):
 # Example with generating data on the fly
 # https://towardsdatascience.com/a-simple-cnn-multi-image-classifier-31c463324fa
 def CNN(image_size):
-    #training_set = read_training_set()
-    #validation_set = read_validation_set()
-    #test_set = read_test_set()
-
     training_set = tf.keras.preprocessing.image_dataset_from_directory(
-        "C:/dev/ML_Project/data/archive/images/tests",
+        "C:\dev\ML_Project\data\processed\images",
         validation_split=0.2,
         subset="training",
         seed=1337,
@@ -145,7 +142,7 @@ def CNN(image_size):
         batch_size=BATCH_SIZE,
     )
     validation_set = tf.keras.preprocessing.image_dataset_from_directory(
-        "C:/dev/ML_Project/data/archive/images/tests",
+        "C:\dev\ML_Project\data\processed\images",
         validation_split=0.2,
         subset="validation",
         seed=1337,
@@ -153,22 +150,10 @@ def CNN(image_size):
         batch_size=BATCH_SIZE,
     )
 
-    data_augmentation = keras.Sequential(
-        [
-            layers.experimental.preprocessing.RandomFlip("horizontal"),
-            layers.experimental.preprocessing.RandomRotation(0.1),
-            #layers.experimental.preprocessing.RandomTranslation(0.6, 0.6),
-            #layers.experimental.preprocessing.RandomContrast(0.5)
-        ]
-    )
-
-    training_set = training_set.map(lambda x, y: (data_augmentation(x, training=True), y))
-    # validation_set = validation_set.map(lambda x, y: (data_augmentation(x, training=True), y))
-
     training_set = training_set.prefetch(buffer_size=32)
     validation_set = validation_set.prefetch(buffer_size=32)
 
-    model = create_model(image_size + (3,), data_augmentation=data_augmentation)
+    model = create_model(image_size + (3,), data_augmentation=None)
     history = compile_and_fit(model, training_set, validation_set)
     show_model_history(history)
 

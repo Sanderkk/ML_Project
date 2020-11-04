@@ -69,8 +69,7 @@ def image_generation(label_doc, image, dir_path, path):
     samples = expand_dims(img_array, 0)
     # create image data augmentation generator
     datagen = ImageDataGenerator(
-        rotation_range=90,
-        rescale=1. / 255,
+        rotation_range=45,
         shear_range=0.2,
         horizontal_flip=True
     )
