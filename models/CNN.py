@@ -49,27 +49,27 @@ def create_model(input_shape, activation='softmax', data_augmentation=None):
     x = layers.experimental.preprocessing.Rescaling(1.0 / 255)(inputs)
     x = layers.Conv2D(96, 11, strides=4, padding="valid")(x)
     x = layers.Activation("relu")(x)
-    x = layers.Dropout(0.2)(x)
+    x = layers.Dropout(0.3)(x)
     x = layers.MaxPooling2D(3, strides=2)(x)
     x = layers.BatchNormalization()(x)
 
     x = layers.Conv2D(256, kernel_size=(5,5), strides=1, padding="valid")(x)
     x = layers.Activation("relu")(x)
-    x = layers.Dropout(0.2)(x)
+    x = layers.Dropout(0.3)(x)
     x = layers.MaxPooling2D(3, strides=2)(x)
     x = layers.BatchNormalization()(x)
 
     x = layers.Conv2D(384, kernel_size=(3,3), strides=1, padding="valid")(x)
     x = layers.Activation("relu")(x)
-    x = layers.Dropout(0.2)(x)
+    x = layers.Dropout(0.3)(x)
 
     x = layers.Conv2D(384, kernel_size=(3,3), strides=1, padding="valid")(x)
     x = layers.Activation("relu")(x)
-    x = layers.Dropout(0.2)(x)
+    x = layers.Dropout(0.3)(x)
 
     x = layers.Conv2D(256, kernel_size=(3,3), strides=1, padding="valid")(x)
     x = layers.Activation("relu")(x)
-    x = layers.Dropout(0.2)(x)
+    x = layers.Dropout(0.3)(x)
 
     x = layers.MaxPooling2D()(x)
 
@@ -78,15 +78,15 @@ def create_model(input_shape, activation='softmax', data_augmentation=None):
     x = layers.Flatten()(x)
 
     x = layers.Dense(4096, activation='relu')(x)
-    x = layers.Dropout(0.2)(x)
+    x = layers.Dropout(0.5)(x)
     x = layers.BatchNormalization()(x)
 
     x = layers.Dense(4096, activation='relu')(x)
-    x = layers.Dropout(0.2)(x)
+    x = layers.Dropout(0.5)(x)
     x = layers.BatchNormalization()(x)
 
     x = layers.Dense(1000, activation='relu')(x)
-    x = layers.Dropout(0.2)(x)
+    x = layers.Dropout(0.5)(x)
     x = layers.BatchNormalization()(x)
 
     outputs = layers.Dense(CLASS_COUNT, activation=activation)(x)
@@ -130,17 +130,13 @@ def convert_labels(training_labels, test_labels):
 # https://towardsdatascience.com/a-simple-cnn-multi-image-classifier-31c463324fa
 def CNN(image_size):
     training_set = tf.keras.preprocessing.image_dataset_from_directory(
-        "C:\dev\ML_Project\data\processed\images",
-        validation_split=0.2,
-        subset="training",
+        "C:/dev/ML_Project/data/processed/images/training",
         seed=1337,
         image_size=IMAGE_SIZE,
         batch_size=BATCH_SIZE,
     )
     validation_set = tf.keras.preprocessing.image_dataset_from_directory(
-        "C:\dev\ML_Project\data\processed\images",
-        validation_split=0.2,
-        subset="validation",
+        "C:/dev/ML_Project/data/processed/images/validation",
         seed=1337,
         image_size=IMAGE_SIZE,
         batch_size=BATCH_SIZE,

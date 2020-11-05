@@ -84,17 +84,18 @@ def image_generation(label_doc, image, dir_path, path):
         # label_doc.write(PROCESSED_ANNOTATIONS_PATH + dir_path + "/" + path + str(i))
 
 
-def resize_images(paths):
-    for dir_path, image_path in paths.items():
+def resize_images(paths, data_type="training"):
+    for data_dir_path, image_path in paths.items():
+        dir_path = data_type + "/" + data_dir_path
         os.mkdir(PROCESSED_ANNOTATIONS_PATH + dir_path)
         os.mkdir(PROCESSED_IMAGE_PATH + dir_path)
         for i in progressbar.progressbar(range(len(image_path))):
             path = image_path[i]
             # Get label
-            doc = ET.parse(ANNOTATIONS_PATH + dir_path + "/" + path)
+            doc = ET.parse(ANNOTATIONS_PATH + data_dir_path + "/" + path)
             x_min, x_max, y_min, y_max = read_label_contents_image_box(doc)
             # Image
-            image = Image.open(IMAGE_DATA_PATH + dir_path + "/" + path + ".jpg")
+            image = Image.open(IMAGE_DATA_PATH + data_dir_path + "/" + path + ".jpg")
             image = image.crop((x_min, y_min, x_max, y_max))
             image = image.convert('RGB')  # The one RGBA image
             image = image.resize(IMAGE_SIZE)
@@ -133,8 +134,10 @@ https://medium.com/@sourav_srv_bhattacharyya/image-augmentation-to-build-a-power
 """
 
 def generate_data():
-    paths = get_file_paths(training_set_size=TRAINING_SET_SIZE, validation_split=0)
-    resize_images(paths)
+    paths = get_file_paths(training_set_size=TRAINING_SET_SIZE, validation_split=0.2)
+    resize_images(paths, data_type="training")
+    paths = get_file_paths(training_set_size=TRAINING_SET_SIZE, validation_split=0.2, validation=True)
+    resize_images(paths, data_type="validation")
 
 def read_training_set():
     paths = get_file_paths(training_set_size=TRAINING_SET_SIZE, validation_split=VALIDATION_SET_SIZE, data_path=ANNOTATIONS_PATH)
