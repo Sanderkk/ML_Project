@@ -41,58 +41,54 @@ def create_model(image_size_size, activation='softmax'):
     return model
 """
 def create_model(input_shape, activation='softmax', data_augmentation=None):
-
     inputs = keras.Input(shape=input_shape)
     # Image augmentation block
-    #x = data_augmentation(inputs)
+    # x = data_augmentation(inputs)
 
     # Entry block
     x = layers.experimental.preprocessing.Rescaling(1.0 / 255)(inputs)
-    x = layers.Conv2D(64, 3, strides=2, padding="same")(x)
-    x = layers.BatchNormalization()(x)
+    x = layers.Conv2D(96, 11, strides=4, padding="valid")(x)
     x = layers.Activation("relu")(x)
-
-    x = layers.Dropout(0.5)(x)
-
-    x = layers.Conv2D(128, 3, padding="same")(x)
+    x = layers.Dropout(0.2)(x)
+    x = layers.MaxPooling2D(3, strides=2)(x)
     x = layers.BatchNormalization()(x)
+
+    x = layers.Conv2D(256, kernel_size=(5,5), strides=1, padding="valid")(x)
     x = layers.Activation("relu")(x)
-
-    previous_block_activation = x  # Set aside residual
-
-    for size in [128, 256, 512, 728, 728, 728]:
-        x = layers.Dropout(0.25)(x)
-        x = layers.Activation("relu")(x)
-        x = layers.SeparableConv2D(size, 3, padding="same")(x)
-        x = layers.BatchNormalization()(x)
-
-        x = layers.Activation("relu")(x)
-        #x = layers.Dropout(0.5)(x)
-        x = layers.SeparableConv2D(size, 3, padding="same")(x)
-        x = layers.BatchNormalization()(x)
-
-        x = layers.MaxPooling2D(3, strides=2, padding="same")(x)
-        x = layers.Dropout(0.5)(x)
-        # Project residual
-        residual = layers.Conv2D(size, 1, strides=2, padding="same")(
-            previous_block_activation
-        )
-        x = layers.add([x, residual])  # Add back residual
-        previous_block_activation = x  # Set aside next residual
-
-    x = layers.Dropout(0.5)(x)
-    x = layers.SeparableConv2D(1024, 3, padding="same")(x)
+    x = layers.Dropout(0.2)(x)
+    x = layers.MaxPooling2D(3, strides=2)(x)
     x = layers.BatchNormalization()(x)
+
+    x = layers.Conv2D(384, kernel_size=(3,3), strides=1, padding="valid")(x)
     x = layers.Activation("relu")(x)
+    x = layers.Dropout(0.2)(x)
 
-    x = layers.GlobalAveragePooling2D()(x)
+    x = layers.Conv2D(384, kernel_size=(3,3), strides=1, padding="valid")(x)
+    x = layers.Activation("relu")(x)
+    x = layers.Dropout(0.2)(x)
 
-    x = layers.Dropout(0.5)(x)
+    x = layers.Conv2D(256, kernel_size=(3,3), strides=1, padding="valid")(x)
+    x = layers.Activation("relu")(x)
+    x = layers.Dropout(0.2)(x)
 
-    #x = layers.Dense(254, activation='relu')(x)
-    #x = layers.Dropout(0.5)(x)
-    #x = layers.Dense(254, activation='relu')(x)
-    #x = layers.Dropout(0.5)(x)
+    x = layers.MaxPooling2D()(x)
+
+    x = layers.BatchNormalization()(x)
+
+    x = layers.Flatten()(x)
+
+    x = layers.Dense(4096, activation='relu')(x)
+    x = layers.Dropout(0.2)(x)
+    x = layers.BatchNormalization()(x)
+
+    x = layers.Dense(4096, activation='relu')(x)
+    x = layers.Dropout(0.2)(x)
+    x = layers.BatchNormalization()(x)
+
+    x = layers.Dense(1000, activation='relu')(x)
+    x = layers.Dropout(0.2)(x)
+    x = layers.BatchNormalization()(x)
+
     outputs = layers.Dense(CLASS_COUNT, activation=activation)(x)
     return keras.Model(inputs, outputs)
 
@@ -104,7 +100,7 @@ def compile_and_fit(model, training_set, validation_set):
     ]
     model.compile(
         optimizer=optimizers.Adam(1e-3),
-        loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+        loss="sparse_categorical_crossentropy",#tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
         metrics=['accuracy'])
 
     history = model.fit_generator(
