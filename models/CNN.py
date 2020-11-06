@@ -53,21 +53,25 @@ def create_model(input_shape, activation='softmax', data_augmentation=None):
     x = layers.MaxPooling2D(3, strides=2)(x)
     x = layers.BatchNormalization()(x)
 
-    x = layers.Conv2D(256, kernel_size=(5,5), strides=1, padding="valid")(x)
+    x = layers.Conv2D(256, kernel_size=5, strides=1, padding="valid")(x)
     x = layers.Activation("relu")(x)
     x = layers.Dropout(0.3)(x)
     x = layers.MaxPooling2D(3, strides=2)(x)
     x = layers.BatchNormalization()(x)
 
-    x = layers.Conv2D(384, kernel_size=(3,3), strides=1, padding="valid")(x)
+    x = layers.Conv2D(384, kernel_size=3, strides=1, padding="valid")(x)
     x = layers.Activation("relu")(x)
     x = layers.Dropout(0.3)(x)
 
-    x = layers.Conv2D(384, kernel_size=(3,3), strides=1, padding="valid")(x)
+    x = layers.Conv2D(384, kernel_size=3, strides=1, padding="valid")(x)
     x = layers.Activation("relu")(x)
     x = layers.Dropout(0.3)(x)
 
-    x = layers.Conv2D(256, kernel_size=(3,3), strides=1, padding="valid")(x)
+    x = layers.Conv2D(384, kernel_size=3, strides=1, padding="valid")(x)
+    x = layers.Activation("relu")(x)
+    x = layers.Dropout(0.3)(x)
+
+    x = layers.Conv2D(256, kernel_size=3, strides=1, padding="valid")(x)
     x = layers.Activation("relu")(x)
     x = layers.Dropout(0.3)(x)
 
@@ -85,7 +89,7 @@ def create_model(input_shape, activation='softmax', data_augmentation=None):
     x = layers.Dropout(0.5)(x)
     x = layers.BatchNormalization()(x)
 
-    x = layers.Dense(1000, activation='relu')(x)
+    x = layers.Dense(1024, activation='relu')(x)
     x = layers.Dropout(0.5)(x)
     x = layers.BatchNormalization()(x)
 
@@ -130,13 +134,20 @@ def convert_labels(training_labels, test_labels):
 # https://towardsdatascience.com/a-simple-cnn-multi-image-classifier-31c463324fa
 def CNN(image_size):
     training_set = tf.keras.preprocessing.image_dataset_from_directory(
-        "C:/dev/ML_Project/data/processed/images/training",
+        DATA_PATH + "processed/training",
         seed=1337,
         image_size=IMAGE_SIZE,
         batch_size=BATCH_SIZE,
     )
     validation_set = tf.keras.preprocessing.image_dataset_from_directory(
-        "C:/dev/ML_Project/data/processed/images/validation",
+        DATA_PATH + "processed/validation",
+        seed=1337,
+        image_size=IMAGE_SIZE,
+        batch_size=BATCH_SIZE,
+    )
+
+    test_set = tf.keras.preprocessing.image_dataset_from_directory(
+        DATA_PATH + "processed/testing",
         seed=1337,
         image_size=IMAGE_SIZE,
         batch_size=BATCH_SIZE,
@@ -149,7 +160,7 @@ def CNN(image_size):
     history = compile_and_fit(model, training_set, validation_set)
     show_model_history(history)
 
-    test_loss, test_acc = model.evaluate(validation_set, verbose=2)
+    test_loss, test_acc = model.evaluate(test_set, verbose=2)
     print(test_acc)
 
     # Save model
