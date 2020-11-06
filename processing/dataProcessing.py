@@ -124,9 +124,9 @@ def process_data():
     # Get paths
     training_set_paths, validation_set_paths, test_set_paths = get_file_split_paths()
     # Split data
-    split_images(training_set_paths, data_type="training", augment=True)
-    split_images(validation_set_paths, data_type="validation")
-    split_images(test_set_paths, data_type="testing")
+    split_images(training_set_paths, data_type="training", augment=True, crop=True)
+    split_images(validation_set_paths, data_type="validation", crop=True)
+    split_images(test_set_paths, data_type="testing", crop=True)
 
 """
 def read_data(paths, annotations_path, image_file_path, preprocessed=True):

@@ -1,5 +1,5 @@
 # Data config
-CLASS_COUNT = 5
+CLASS_COUNT = 10
 IMAGE_SIZE = (224, 224)
 TRAINING_SET_SIZE = 0.9
 VALIDATION_SET_SIZE = 0.2
@@ -7,7 +7,7 @@ AUGMENT_DATA_NUMBER = 10
 
 # CNN config
 BATCH_SIZE=32
-CNN_EPOCHS=10
+CNN_EPOCHS=50
 DATA_PATH = "C:/dev/ML_Project/data/"
 # DATA_PATH = "/home/sander/dev/ML_Project/data/"
 
