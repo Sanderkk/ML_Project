@@ -17,9 +17,6 @@ from tensorflow import keras
 from tensorflow.keras import layers
 import matplotlib.pyplot as plt
 
-ANNOTATIONS_PATH = DATA_PATH + "archive/annotations/Annotation/"
-IMAGE_DATA_PATH = DATA_PATH + "archive/images/Images/"
-
 def get_file_paths(data_path=ANNOTATIONS_PATH, data_type="training"):
     paths = {}
     dirs = os.listdir(data_path)
@@ -94,7 +91,7 @@ def save_image(image_iterator, path):
         image_data = batch[0].astype('uint8')
         save_img(path + "_" + str(i) + ".jpg", image_data)
 
-def split_images(paths, data_type="training", crop=True, augment=False):
+def split_images(paths, data_type="training", crop=IMAGE_CROP, augment=False):
     os.mkdir(DATA_PATH + "processed/" + data_type)
     save_data_path = DATA_PATH + "processed/" + data_type + "/"
 
@@ -125,7 +122,7 @@ def process_data():
     training_set_paths, validation_set_paths, test_set_paths = get_file_split_paths()
     # Split data
     split_images(training_set_paths, data_type="training", augment=True)
-    split_images(validation_set_paths, data_type="validation")
+    split_images(validation_set_paths, data_type="validation", augment=True)
     split_images(test_set_paths, data_type="testing")
 
 """
