@@ -6,5 +6,5 @@ import os
 
 if __name__ == "__main__":
     # CNN
-    #CNN()
-    MLP()
+    CNN()
+    # MLP()

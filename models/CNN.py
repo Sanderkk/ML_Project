@@ -64,10 +64,12 @@ def create_model(input_shape, activation='softmax'):
     x = layers.Conv2D(384, kernel_size=3, strides=1, padding="valid")(x)
     x = layers.Activation("relu")(x)
     x = layers.Dropout(0.4)(x)
+    x = layers.BatchNormalization()(x)
 
     x = layers.Conv2D(384, kernel_size=3, strides=1, padding="valid")(x)
     x = layers.Activation("relu")(x)
     x = layers.Dropout(0.4)(x)
+    x = layers.BatchNormalization()(x)
 
     x = layers.Conv2D(256, kernel_size=3, strides=1, padding="valid")(x)
     x = layers.Activation("relu")(x)
@@ -117,7 +119,7 @@ def create_model(input_shape, activation='softmax'):
 
 def compile_and_fit(model, training_set, validation_set):
     callbacks = [
-        keras.callbacks.ModelCheckpoint("callbacks/save_at_{epoch}.h5"),
+        #keras.callbacks.ModelCheckpoint("callbacks/save_at_{epoch}.h5"),
     ]
     model.compile(
         optimizer=optimizers.Adam(1e-3),

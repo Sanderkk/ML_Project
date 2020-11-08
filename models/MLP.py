@@ -35,16 +35,16 @@ def create_model(input_shape, activation='softmax'):
 
     x = layers.Flatten()(x)
 
-    x = layers.Dense(224, activation='relu')(x)
-    x = layers.Dropout(0.5)(x)
-    x = layers.BatchNormalization()(x)
-
-    x = layers.Dense(4096, activation='relu')(x)
-    x = layers.Dropout(0.5)(x)
-    x = layers.BatchNormalization()(x)
-
     x = layers.Dense(1024, activation='relu')(x)
-    x = layers.Dropout(0.5)(x)
+    x = layers.Dropout(0.3)(x)
+    x = layers.BatchNormalization()(x)
+
+    x = layers.Dense(512, activation='relu')(x)
+    x = layers.Dropout(0.3)(x)
+    x = layers.BatchNormalization()(x)
+
+    x = layers.Dense(512, activation='relu')(x)
+    x = layers.Dropout(0.3)(x)
     x = layers.BatchNormalization()(x)
 
     outputs = layers.Dense(CLASS_COUNT, activation=activation)(x)
@@ -52,10 +52,10 @@ def create_model(input_shape, activation='softmax'):
 
 def compile_and_fit(model, training_set, validation_set):
     callbacks = [
-        keras.callbacks.ModelCheckpoint("callbacks/save_at_{epoch}.h5"),
+        # keras.callbacks.ModelCheckpoint("callbacks/save_at_{epoch}.h5"),
     ]
     model.compile(
-        optimizer=optimizers.Adam(1e-3),
+        optimizer=optimizers.Adam(3e-3),
         loss="sparse_categorical_crossentropy",#tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
         metrics=['accuracy'])
 
@@ -99,4 +99,4 @@ def MLP():
     print(test_acc)
 
     # Save model
-    model.save('CNN_Model')
+    model.save('MLP_Model')
