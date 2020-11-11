@@ -12,7 +12,7 @@ IMAGE_DATA_PATH = DATA_PATH + "archive/images/Images/"
 
 # CNN config
 BATCH_SIZE=32
-CNN_EPOCHS=25
+CNN_EPOCHS=50
 
 """
 https://www.tensorflow.org/guide/gpu#limiting_gpu_memory_growth

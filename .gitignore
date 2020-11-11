@@ -9,3 +9,6 @@ data/
 callbacks/
 CNN_Model/
 MLP_Model/
+CNN_Tuned_Best_Model/
+Trained_CNN.pdf
+random_search/
