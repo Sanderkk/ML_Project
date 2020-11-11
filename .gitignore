@@ -12,3 +12,13 @@ MLP_Model/
 CNN_Tuned_Best_Model/
 Trained_CNN.pdf
 random_search/
+
+/webapp/backend/uploads/*
+!/webapp/backend/uploads/profile_pic-1604772389132.jpg
+
+/webapp/backend/trent_model/CNN_Model/*
+/webapp/backend/trent_model/testing/*
+!/webapp/backend/trent_model/testing/n02091467-Norwegian_elkhound
+
+/webapp/backend/node_modules/*
+/webapp/frontend/node_modules/*
