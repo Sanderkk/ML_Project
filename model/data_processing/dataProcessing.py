@@ -17,11 +17,24 @@ from tensorflow import keras
 from tensorflow.keras import layers
 import matplotlib.pyplot as plt
 
-def get_file_paths(data_path=ANNOTATIONS_PATH, data_type="training"):
+
+def breed_name_converter(name):
+    return " ".join([breed.capitalize() for breed in name.split("_")])
+
+def get_file_paths(data_path=ANNOTATIONS_PATH, data_type="training", name_dir_map={}):
     paths = {}
     dirs = os.listdir(data_path)
+    # Use only the given classes
+    if len(name_dir_map) != 0 and len(GIVEN_CLASSES) != 0:
+        new_dirs = []
+        for breed_name in dirs:
+            name = breed_name_converter(name_dir_map[breed_name] if breed_name in name_dir_map else breed_name)
+            if name in GIVEN_CLASSES:
+                new_dirs.append(breed_name)
+        dirs = new_dirs
+
     # Tak only part of the data as training or test data
-    for dir in dirs[:CLASS_COUNT]:
+    for dir in dirs[:CLASS_COUNT] if len(name_dir_map) != 0 else dirs:
         paths[dir] = []
         files = os.listdir(data_path + dir)
 
@@ -39,10 +52,10 @@ def get_file_paths(data_path=ANNOTATIONS_PATH, data_type="training"):
             paths[dir].append(file_path)
     return paths
 
-def get_file_split_paths():
-    training_set_paths = get_file_paths(data_type="training")
-    validation_set_paths = get_file_paths(data_type="validation")
-    test_set_paths = get_file_paths(data_type="testing")
+def get_file_split_paths(name_dir_map={}):
+    training_set_paths = get_file_paths(data_type="training", name_dir_map=name_dir_map)
+    validation_set_paths = get_file_paths(data_type="validation", name_dir_map=name_dir_map)
+    test_set_paths = get_file_paths(data_type="testing", name_dir_map=name_dir_map)
     return training_set_paths, validation_set_paths, test_set_paths
 
 def read_label_contents_image_box(label_file):
@@ -91,18 +104,19 @@ def save_image(image_iterator, path):
         image_data = batch[0].astype('uint8')
         save_img(path + "_" + str(i) + ".jpg", image_data)
 
-def split_images(paths, data_type="training", crop=IMAGE_CROP, augment=False):
-    os.mkdir(DATA_PATH + "processed/" + data_type)
-    save_data_path = DATA_PATH + "processed/" + data_type + "/"
+def split_images(paths, data_type="training", crop=IMAGE_CROP, augment=False, data_source="StanfordDogs", name_dir_map={}):
+    save_data_path = DATA_PATH + "/processed_images/" + data_type + "/"
+    os.mkdir(save_data_path)
 
-    for dir_path, image_path in paths.items():
+    for dir_path_name, image_path in paths.items():
+        dir_path = name_dir_map[dir_path_name] if dir_path_name in name_dir_map else dir_path_name
         os.mkdir(save_data_path + dir_path)
         for i in progressbar.progressbar(range(len(image_path))):
             path = image_path[i]
             # Get label
-            doc = ET.parse(ANNOTATIONS_PATH + dir_path + "/" + path)
+            doc = ET.parse(ANNOTATIONS_PATH + dir_path_name + "/" + path)
             # Image
-            image = Image.open(IMAGE_DATA_PATH + dir_path + "/" + path + ".jpg")
+            image = Image.open(IMAGE_DATA_PATH + dir_path_name + "/" + path + ".jpg")
             if crop:
                 image = crop_image(image, doc)
 
@@ -115,66 +129,24 @@ def split_images(paths, data_type="training", crop=IMAGE_CROP, augment=False):
             else:
                 image.save(save_data_path + "/" + dir_path + "/" + path + ".jpg")
 
-
-def process_data():
-    os.mkdir(DATA_PATH + "processed/")
-    # Get paths
-    training_set_paths, validation_set_paths, test_set_paths = get_file_split_paths()
-    # Split data
-    split_images(training_set_paths, data_type="training", augment=True)
-    split_images(validation_set_paths, data_type="validation", augment=True)
-    split_images(test_set_paths, data_type="testing")
-
-"""
-def read_data(paths, annotations_path, image_file_path, preprocessed=True):
-    images = []
-    labels = []
+def get_name_dir_mapping():
+    name_dir_map = {}
+    paths = get_file_paths(data_type="training")
     for dir_path, image_path in paths.items():
-        for i in progressbar.progressbar(range(len(image_path))):
-            path = image_path[i]
-            # Get label
-            doc = ET.parse(annotations_path + dir_path + "/" + path)
-            labels.append(get_annotation_label(doc))
-            image = Image.open(image_file_path + dir_path + "/" + path + ".jpg")
-            if not preprocessed:
-                x_min, x_max, y_min, y_max = read_label_contents_image_box(doc)
-                image = image.crop((x_min, y_min, x_max, y_max))
-                image = image.convert('RGB')  # The one RGBA image
-                image = image.resize(IMAGE_SIZE)
-            image_data = np.asanyarray(image)
-            images.append(image_data)
-            #print(dir_path+"/"+path, get_annotation_label(doc))
-    return np.asanyarray(images), np.asanyarray(labels)
+        path = image_path[0]
+        doc = ET.parse(ANNOTATIONS_PATH + dir_path + "/" + path)
+        name_dir_map[dir_path] = get_annotation_label(doc)
+    return name_dir_map
 
-
-def read_training_set():
-    paths = get_file_paths(training_set_size=TRAINING_SET_SIZE, validation_split=VALIDATION_SET_SIZE, data_path=ANNOTATIONS_PATH)
-    data, targets = read_data(paths, ANNOTATIONS_PATH, IMAGE_DATA_PATH, preprocessed=False)
-    training_set = tf.keras.preprocessing.timeseries_dataset_from_array(
-        data, targets, len(data), sequence_stride=1, sampling_rate=1,
-        batch_size=BATCH_SIZE, shuffle=False, seed=None, start_index=None, end_index=None
-    )
-    return training_set
-
-def read_validation_set():
-    paths = get_file_paths(training_set_size=TRAINING_SET_SIZE, validation=True, validation_split=VALIDATION_SET_SIZE, data_path=ANNOTATIONS_PATH)
-    data, targets = read_data(paths, ANNOTATIONS_PATH, IMAGE_DATA_PATH, preprocessed=False)
-    training_set = tf.keras.preprocessing.timeseries_dataset_from_array(
-        data, targets, len(data), sequence_stride=1, sampling_rate=1,
-        batch_size=BATCH_SIZE, shuffle=False, seed=None, start_index=None, end_index=None
-    )
-    return training_set
-
-def read_test_set():
-    paths = get_file_paths(training_data=False, training_set_size=TRAINING_SET_SIZE, data_path=ANNOTATIONS_PATH)
-    data, targets = read_data(paths, ANNOTATIONS_PATH, IMAGE_DATA_PATH, preprocessed=False)
-    training_set = tf.keras.preprocessing.timeseries_dataset_from_array(
-        data, targets, len(data), sequence_stride=1, sampling_rate=1,
-        batch_size=BATCH_SIZE, shuffle=False, seed=None, start_index=None, end_index=None
-    )
-    return training_set
-
-"""
+def process_data(data_source="StanfordDogs"):
+    name_dir_map = get_name_dir_mapping()
+    os.mkdir(DATA_PATH + "/processed_images/")
+    # Get paths
+    training_set_paths, validation_set_paths, test_set_paths = get_file_split_paths(name_dir_map)
+    # Split data
+    split_images(training_set_paths, data_type="training", augment=True, name_dir_map=name_dir_map)
+    split_images(validation_set_paths, data_type="validation", augment=True, name_dir_map=name_dir_map)
+    split_images(test_set_paths, data_type="testing", name_dir_map=name_dir_map)
 
 if __name__ == "__main__":
     process_data()

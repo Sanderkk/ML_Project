@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from CONFIG import *
-from processing.dataProcessing import *
+from data_processing.dataProcessing import *
 from models.model_helper import *
 
 """
@@ -55,7 +55,7 @@ def compile_and_fit(model, training_set, validation_set):
         # keras.callbacks.ModelCheckpoint("callbacks/save_at_{epoch}.h5"),
     ]
     model.compile(
-        optimizer=optimizers.Adam(3e-3),
+        optimizer=optimizers.Adam(1e-3),
         loss="sparse_categorical_crossentropy",#tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
         metrics=['accuracy'])
 

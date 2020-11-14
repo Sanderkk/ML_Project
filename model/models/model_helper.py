@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from CONFIG import *
-from processing.dataProcessing import *
+from data_processing.dataProcessing import *
 
 def show_model_history(history):
     plt.plot(history.history['accuracy'], label='accuracy')

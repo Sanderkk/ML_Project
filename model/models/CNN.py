@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from CONFIG import *
-from processing.dataProcessing import *
+from data_processing.dataProcessing import *
 from models.model_helper import *
 
 
@@ -43,10 +43,8 @@ def create_model(input_shape, activation='softmax'):
 
     x = layers.Conv2D(256, kernel_size=3, strides=1, padding="valid")(x)
     x = layers.Activation("relu")(x)
-
     x = layers.MaxPooling2D()(x)
     x = layers.Dropout(0.5)(x)
-
     x = layers.BatchNormalization()(x)
 
     x = layers.Flatten()(x)
@@ -106,20 +104,20 @@ def compile_and_fit(model, training_set, validation_set):
 
 def CNN():
     training_set = tf.keras.preprocessing.image_dataset_from_directory(
-        DATA_PATH + "processed/training",
+        DATA_PATH + "\processed_images/training",
         seed=1337,
         image_size=IMAGE_SIZE,
         batch_size=BATCH_SIZE,
     )
     validation_set = tf.keras.preprocessing.image_dataset_from_directory(
-        DATA_PATH + "processed/validation",
+        DATA_PATH + "\processed_images/validation",
         seed=1337,
         image_size=IMAGE_SIZE,
         batch_size=BATCH_SIZE,
     )
 
     test_set = tf.keras.preprocessing.image_dataset_from_directory(
-        DATA_PATH + "processed/testing",
+        DATA_PATH + "\processed_images/testing",
         seed=1337,
         image_size=IMAGE_SIZE,
         batch_size=BATCH_SIZE,

@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from CONFIG import *
-from processing.dataProcessing import *
+from data_processing.dataProcessing import *
 from models.model_helper import *
 
 class CNNHyperModel(HyperModel):

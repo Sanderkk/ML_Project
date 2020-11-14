@@ -2,7 +2,7 @@ import os
 import math
 from PIL import Image
 from CONFIG import *
-from processing.dataProcessing import get_file_paths, image_generation
+from data_processing.dataProcessing import get_file_paths, image_generation
 import matplotlib.pyplot as plt
 import numpy as np
 from keras.preprocessing.image import ImageDataGenerator, img_to_array
