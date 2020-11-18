@@ -91,6 +91,7 @@ def compile_and_fit(model, training_set, validation_set):
     ]
     model.compile(
         optimizer=optimizers.Adam(0.0012158),
+        # tf.keras.losses.Hinge()
         loss="sparse_categorical_crossentropy",#tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
         metrics=['accuracy'])
 
