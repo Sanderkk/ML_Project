@@ -10,76 +10,79 @@ from CONFIG import *
 from data_processing.dataProcessing import *
 from models.model_helper import *
 
-# Notes
-"""
-Deeper better than wider
-
-
-"""
-
-data_augmentation = keras.Sequential(
-    [
-        layers.experimental.preprocessing.RandomFlip("horizontal"),
-        layers.experimental.preprocessing.RandomRotation(0.2)
-    ]
-)
 
 def create_model(input_shape, activation='softmax'):
     inputs = keras.Input(shape=input_shape)
     # Image augmentation block
-    x = data_augmentation(inputs)
+    # x = data_augmentation(inputs)
 
     # Entry block
     x = layers.experimental.preprocessing.Rescaling(1.0 / 255)(inputs)
 
-    x = layers.Conv2D(64, 5, strides=1, padding="same")(x)
+    x = layers.Conv2D(112, 12, strides=4, padding="valid")(x)
     x = layers.Activation("relu")(x)
     x = layers.MaxPooling2D(3, strides=2)(x)
     x = layers.Dropout(0.25)(x)
     x = layers.BatchNormalization()(x)
 
-    ################ Test ########################
-    x = layers.Conv2D(128, kernel_size=3, strides=1, padding="same")(x)
+    x = layers.Conv2D(256, kernel_size=1, strides=1, padding="valid")(x)
     x = layers.Activation("relu")(x)
-    x = layers.Dropout(0.3)(x)
+    x = layers.Dropout(0.4)(x)
+    x = layers.BatchNormalization()(x)
+    x = layers.Conv2D(256, kernel_size=1, strides=1, padding="valid")(x)
+    x = layers.Activation("relu")(x)
+    x = layers.Dropout(0.4)(x)
     x = layers.BatchNormalization()(x)
 
-    x = layers.Conv2D(256, kernel_size=3, strides=1, padding="same")(x)
-    x = layers.Activation("relu")(x)
-    x = layers.Dropout(0.3)(x)
-    x = layers.BatchNormalization()(x)
-    #################
-
-    x = layers.Conv2D(256, kernel_size=3, strides=1, padding="same")(x)
+    x = layers.Conv2D(256, kernel_size=3, strides=1, padding="valid")(x)
     x = layers.Activation("relu")(x)
     x = layers.MaxPooling2D(3, strides=2)(x)
-    x = layers.Dropout(0.25)(x)
+    x = layers.Dropout(0.4)(x)
     x = layers.BatchNormalization()(x)
 
-    x = layers.Conv2D(256, kernel_size=3, strides=1, padding="same")(x)
+    x = layers.Conv2D(512, kernel_size=1, strides=1, padding="valid")(x)
     x = layers.Activation("relu")(x)
-    x = layers.Dropout(0.3)(x)
+    x = layers.Dropout(0.5)(x)
     x = layers.BatchNormalization()(x)
 
-    x = layers.Conv2D(256, kernel_size=3, strides=1, padding="same")(x)
+    x = layers.Conv2D(512, kernel_size=3, strides=1, padding="valid")(x)
     x = layers.Activation("relu")(x)
-    x = layers.Dropout(0.3)(x)
+    x = layers.Dropout(0.45)(x)
     x = layers.BatchNormalization()(x)
 
-    x = layers.Conv2D(256, kernel_size=3, strides=1, padding="same")(x)
+    x = layers.Conv2D(384, kernel_size=1, strides=1, padding="valid")(x)
+    x = layers.Activation("relu")(x)
+    x = layers.Dropout(0.45)(x)
+    x = layers.BatchNormalization()(x)
+
+    x = layers.Conv2D(384, kernel_size=3, strides=1, padding="valid")(x)
+    x = layers.Activation("relu")(x)
+    x = layers.Dropout(0.45)(x)
+    x = layers.BatchNormalization()(x)
+
+    x = layers.Conv2D(256, kernel_size=1, strides=1, padding="valid")(x)
+    x = layers.Activation("relu")(x)
+    x = layers.Dropout(0.5)(x)
+    x = layers.BatchNormalization()(x)
+
+    x = layers.Conv2D(256, kernel_size=3, strides=1, padding="valid")(x)
     x = layers.Activation("relu")(x)
     x = layers.MaxPooling2D()(x)
-    x = layers.Dropout(0.25)(x)
+    x = layers.Dropout(0.5)(x)
     x = layers.BatchNormalization()(x)
 
     x = layers.Flatten()(x)
 
-    x = layers.Dense(512, activation='relu')(x)
-    x = layers.Dropout(0.4)(x)
+    x = layers.Dense(2560, activation='relu')(x)
+    x = layers.Dropout(0.30)(x)
     x = layers.BatchNormalization()(x)
 
-    x = layers.Dense(256, activation='relu')(x)
-    x = layers.Dropout(0.3)(x)
+    x = layers.Dense(3072, activation='relu')(x)
+    x = layers.Dropout(0.45)(x)
+    x = layers.BatchNormalization()(x)
+
+    x = layers.Dense(1024, activation='relu')(x)
+    x = layers.Dropout(0.5)(x)
     x = layers.BatchNormalization()(x)
 
     outputs = layers.Dense(CLASS_COUNT, activation=activation)(x)
@@ -112,7 +115,6 @@ def compile_and_fit(model, training_set, validation_set):
     ]
     model.compile(
         optimizer=optimizers.Adam(0.0012158),
-        # tf.keras.losses.Hinge()
         loss="sparse_categorical_crossentropy",#tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
         metrics=['accuracy'])
 
@@ -149,7 +151,6 @@ def CNN():
     validation_set = validation_set.prefetch(buffer_size=32)
 
     model = create_model(IMAGE_SIZE + (3,))
-    print(model.summary())
     history = compile_and_fit(model, training_set, validation_set)
     show_model_history(history)
 

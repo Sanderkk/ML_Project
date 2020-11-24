@@ -69,20 +69,20 @@ def compile_and_fit(model, training_set, validation_set):
 
 def MLP():
     training_set = tf.keras.preprocessing.image_dataset_from_directory(
-        DATA_PATH + "processed/training",
+        DATA_PATH + "\processed_images/training",
         seed=1337,
         image_size=IMAGE_SIZE,
         batch_size=BATCH_SIZE,
     )
     validation_set = tf.keras.preprocessing.image_dataset_from_directory(
-        DATA_PATH + "processed/validation",
+        DATA_PATH + "\processed_images/validation",
         seed=1337,
         image_size=IMAGE_SIZE,
         batch_size=BATCH_SIZE,
     )
 
     test_set = tf.keras.preprocessing.image_dataset_from_directory(
-        DATA_PATH + "processed/testing",
+        DATA_PATH + "\processed_images/testing",
         seed=1337,
         image_size=IMAGE_SIZE,
         batch_size=BATCH_SIZE,
@@ -99,4 +99,4 @@ def MLP():
     print(test_acc)
 
     # Save model
-    model.save('MLP_Model')
+    model.save('trained_models/MLP_Model')

@@ -1,11 +1,11 @@
 # Data config
-GIVEN_CLASSES = ['Chihuahua', 'Beagle', 'American Staffordshire Terrier', 'Labrador Retriever', 'Collie', 'Border Collie', 'Rottweiler', 'Miniature Pinscher', 'Boxer', 'Great Dane', 'Siberian Husky', 'Pug', 'Great Pyrenees', 'Pomeranian']
-CLASS_COUNT = 14
-IMAGE_SIZE = (224, 224)
+GIVEN_CLASSES = [] #['Chihuahua', 'Beagle', 'American Staffordshire Terrier', 'Labrador Retriever', 'Collie', 'Border Collie', 'Rottweiler', 'Miniature Pinscher', 'Boxer', 'Great Dane', 'Siberian Husky', 'Pug', 'Great Pyrenees', 'Pomeranian']
+CLASS_COUNT = 40 #14
+IMAGE_SIZE = (128, 128)
 TRAINING_SET_SIZE = 0.9
 VALIDATION_SET_SIZE = 0.2
-AUGMENT_DATA_NUMBER = 10
-IMAGE_CROP=False
+AUGMENT_DATA_NUMBER = 9
+IMAGE_CROP=True
 
 DATA_PATH = "C:/dev/ML_Project/model/data/"
 ANNOTATIONS_PATH = DATA_PATH + "StanfordDogs/archive/annotations/Annotation/"
@@ -19,7 +19,7 @@ DOG_BREED_TRAINING_DATA = DOG_BREED_DATA + "/Dog_Breed_Training_Images/"
 DOG_BREED_TEST_DATA = DOG_BREED_DATA + "/Dog_Breed_Test_Images/"
 
 # CNN config
-BATCH_SIZE=32
+BATCH_SIZE=64
 CNN_EPOCHS=50
 
 """
