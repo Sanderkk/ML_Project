@@ -50,7 +50,19 @@ def get_file_paths(data_path=ANNOTATIONS_PATH, data_type="training", name_dir_ma
 
         for file_path in file_paths:
             paths[dir].append(file_path)
+
+    paths = normalize_ammount(paths)
     return paths
+
+def normalize_ammount(paths):
+    updated_paths = {}
+    max_num = math.inf
+    for key, values in paths.items():
+        if len(values) < max_num:
+            max_num = len(values)
+    for key, values in paths.items():
+        updated_paths[key] = values[:max_num]
+    return updated_paths
 
 def get_file_split_paths(name_dir_map={}):
     training_set_paths = get_file_paths(data_type="training", name_dir_map=name_dir_map)
@@ -91,18 +103,36 @@ def image_generation(image):
     # generate samples and plot
     return it
 
-def crop_image(image, label_doc):
-    x_min, x_max, y_min, y_max = read_label_contents_image_box(label_doc)
-    image = image.crop((x_min, y_min, x_max, y_max))
-    image = image.convert('RGB')  # The one RGBA image
-    return image
-
+"""
 def save_image(image_iterator, path):
     for i in range(AUGMENT_DATA_NUMBER):
         # generate batch of images
         batch = image_iterator.next()
         image_data = batch[0].astype('uint8')
         save_img(path + "_" + str(i) + ".jpg", image_data)
+"""
+
+def save_image(image, path):
+    img_array = img_to_array(image)
+
+    # expand dimension to one sample
+    samples = expand_dims(img_array, 0)
+    data_augmentation = tf.keras.Sequential([
+        layers.experimental.preprocessing.RandomFlip("vertical"),
+        layers.experimental.preprocessing.RandomRotation(0.2),
+        layers.experimental.preprocessing.Resizing(IMAGE_SIZE[0], IMAGE_SIZE[1])
+    ])
+    for i in range(AUGMENT_DATA_NUMBER):
+        # generate batch of images
+        batch = data_augmentation(samples)
+        image_data = batch[0]
+        save_img(path + "_" + str(i) + ".jpg", image_data)
+
+def crop_image(image, label_doc):
+    x_min, x_max, y_min, y_max = read_label_contents_image_box(label_doc)
+    image = image.crop((x_min, y_min, x_max, y_max))
+    image = image.convert('RGB')  # The one RGBA image
+    return image
 
 def split_images(paths, data_type="training", crop=IMAGE_CROP, augment=False, data_source="StanfordDogs", name_dir_map={}):
     save_data_path = DATA_PATH + "/processed_images/" + data_type + "/"
@@ -120,12 +150,12 @@ def split_images(paths, data_type="training", crop=IMAGE_CROP, augment=False, da
             if crop:
                 image = crop_image(image, doc)
 
-            image = image.resize(IMAGE_SIZE)
+            #image = image.resize(IMAGE_SIZE)
             # Generate more data with image augmentation
 
             if augment:
-                image_generator_it = image_generation(image)
-                save_image(image_generator_it, save_data_path + "/" + dir_path + "/" + path)
+                image_augment = image_generation(image)
+                save_image(image, save_data_path + "/" + dir_path + "/" + path)
             else:
                 image.save(save_data_path + "/" + dir_path + "/" + path + ".jpg")
 
@@ -144,8 +174,8 @@ def process_data(data_source="StanfordDogs"):
     # Get paths
     training_set_paths, validation_set_paths, test_set_paths = get_file_split_paths(name_dir_map)
     # Split data
-    split_images(training_set_paths, data_type="training", augment=False, name_dir_map=name_dir_map)
-    split_images(validation_set_paths, data_type="validation", augment=False, name_dir_map=name_dir_map)
+    split_images(training_set_paths, data_type="training", augment=True, name_dir_map=name_dir_map)
+    split_images(validation_set_paths, data_type="validation", augment=True, name_dir_map=name_dir_map)
     split_images(test_set_paths, data_type="testing", name_dir_map=name_dir_map)
 
 if __name__ == "__main__":

@@ -1,6 +1,8 @@
 import './App.css';
 import React, {useState, useEffect, useCallback} from 'react';
 import {useDropzone} from 'react-dropzone'
+import DataContainer from './components/data/dataContainer';
+import CNNData from './data/CNN.json';
 
 function App() {
 
@@ -88,6 +90,8 @@ function App() {
             })}
          </tbody>
         </table> 
+        
+        <DataContainer data={CNNData} />
 
       </div>
       </div>
