@@ -20,10 +20,6 @@ class MLPHyperModel(HyperModel):
 
     def build(self, hp):
         inputs = keras.Input(shape=self.input_shape)
-        # Image augmentation block
-        # x = data_augmentation(inputs)
-
-        # Entry block
         x = layers.experimental.preprocessing.Rescaling(1.0 / 255)(inputs)
 
         x = layers.Flatten()(x)
@@ -32,17 +28,17 @@ class MLPHyperModel(HyperModel):
         x = layers.Dense(
             units=hp.Int(
                 'dense_units_1',
-                min_value=512,
+                min_value=256,
                 max_value=4096,
-                step=256,
-                default=1024
+                step=128,
+                default=512
             ),
             activation='relu'
         )(x)
         x = layers.Dropout(
             hp.Float(
                 'dropout_1',
-                min_value=0.2,
+                min_value=0.1,
                 max_value=0.5,
                 default=0.3,
                 step=0.05
@@ -54,17 +50,17 @@ class MLPHyperModel(HyperModel):
         x = layers.Dense(
             units=hp.Int(
                 'dense_units_2',
-                min_value=512,
+                min_value=256,
                 max_value=4096,
-                step=256,
-                default=1024
+                step=128,
+                default=512
             ),
             activation='relu'
         )(x)
         x = layers.Dropout(
             hp.Float(
                 'dropout_2',
-                min_value=0.2,
+                min_value=0.1,
                 max_value=0.5,
                 default=0.3,
                 step=0.05
@@ -76,17 +72,17 @@ class MLPHyperModel(HyperModel):
         x = layers.Dense(
             units=hp.Int(
                 'dense_units_3',
-                min_value=512,
+                min_value=256,
                 max_value=4096,
-                step=256,
-                default=1024
+                step=128,
+                default=512
             ),
             activation='relu'
         )(x)
         x = layers.Dropout(
             hp.Float(
                 'dropout_3',
-                min_value=0.2,
+                min_value=0.1,
                 max_value=0.5,
                 default=0.3,
                 step=0.05
@@ -117,20 +113,20 @@ class MLPHyperModel(HyperModel):
 def MLP_Hyper():
     training_set = tf.keras.preprocessing.image_dataset_from_directory(
         DATA_PATH + "processed/training",
-        seed=957,
+        seed=1436,
         image_size=IMAGE_SIZE,
         batch_size=BATCH_SIZE,
     )
     validation_set = tf.keras.preprocessing.image_dataset_from_directory(
         DATA_PATH + "processed/validation",
-        seed=957,
+        seed=1436,
         image_size=IMAGE_SIZE,
         batch_size=BATCH_SIZE,
     )
 
     test_set = tf.keras.preprocessing.image_dataset_from_directory(
         DATA_PATH + "processed/testing",
-        seed=957,
+        seed=1436,
         image_size=IMAGE_SIZE,
         batch_size=BATCH_SIZE,
     )
@@ -140,14 +136,14 @@ def MLP_Hyper():
 
     hyperModel = MLPHyperModel(IMAGE_SIZE + (3,), CLASS_COUNT, "softmax")
 
-    MAX_TRIALS = 20
-    EXECUTION_PER_TRIAL = 1
-    N_EPOCH_SEARCH = 25
+    MAX_TRIALS = 25
+    EXECUTION_PER_TRIAL = 2
+    N_EPOCH_SEARCH = 50
 
     tuner = RandomSearch(
         hyperModel,
         objective='val_accuracy',
-        seed=957,
+        seed=1436,
         max_trials=MAX_TRIALS,
         executions_per_trial=EXECUTION_PER_TRIAL,
         directory='random_search',

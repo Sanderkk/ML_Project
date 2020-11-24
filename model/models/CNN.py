@@ -11,25 +11,9 @@ from data_processing.dataProcessing import *
 from models.model_helper import *
 
 # Notes
-"""
-Deeper better than wider
-
-
-"""
-
-data_augmentation = keras.Sequential(
-    [
-        layers.experimental.preprocessing.RandomFlip("horizontal"),
-        layers.experimental.preprocessing.RandomRotation(0.2)
-    ]
-)
 
 def create_model(input_shape, activation='softmax'):
     inputs = keras.Input(shape=input_shape)
-    # Image augmentation block
-    x = data_augmentation(inputs)
-
-    # Entry block
     x = layers.experimental.preprocessing.Rescaling(1.0 / 255)(inputs)
 
     x = layers.Conv2D(64, 5, strides=1, padding="same")(x)
@@ -84,26 +68,6 @@ def create_model(input_shape, activation='softmax'):
 
     outputs = layers.Dense(CLASS_COUNT, activation=activation)(x)
     return keras.Model(inputs, outputs)
-"""
-
-def create_model(input_shape, activation='softmax'):
-    model = models.Sequential()
-    #models.add(layers.LayerNormalization())
-    # model.add(layers.BatchNormalization(input_shape=(64, 64, 3)))
-    model.add(layers.Conv2D(96, (3, 3), activation='relu',
-                            input_shape=input_shape))
-    model.add(layers.MaxPooling2D((2, 2)))
-    model.add(layers.Conv2D(255, (3, 3), activation='relu'))
-    model.add(layers.MaxPooling2D((2, 2)))
-    model.add(layers.Conv2D(255, (3, 3), activation='relu'))
-    model.add(layers.Flatten())
-    model.add(layers.Dense(128, activation='relu'))
-    model.add(layers.Dropout(0.5))
-    model.add(layers.Dense(254, activation='relu'))
-    model.add(layers.Dense(CLASS_COUNT))
-    model.summary()
-    return model
-"""
 
 
 def compile_and_fit(model, training_set, validation_set):
@@ -127,20 +91,20 @@ def compile_and_fit(model, training_set, validation_set):
 def CNN():
     training_set = tf.keras.preprocessing.image_dataset_from_directory(
         DATA_PATH + "\processed_images/training",
-        seed=1337,
+        seed=1436,
         image_size=IMAGE_SIZE,
         batch_size=BATCH_SIZE,
     )
     validation_set = tf.keras.preprocessing.image_dataset_from_directory(
         DATA_PATH + "\processed_images/validation",
-        seed=1337,
+        seed=1436,
         image_size=IMAGE_SIZE,
         batch_size=BATCH_SIZE,
     )
 
     test_set = tf.keras.preprocessing.image_dataset_from_directory(
         DATA_PATH + "\processed_images/testing",
-        seed=1337,
+        seed=1436,
         image_size=IMAGE_SIZE,
         batch_size=BATCH_SIZE,
     )

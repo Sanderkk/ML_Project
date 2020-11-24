@@ -10,27 +10,15 @@ from CONFIG import *
 from data_processing.dataProcessing import *
 from models.model_helper import *
 
-"""
-def create_model(input_shape, activation='softmax'):
-    model = models.Sequential()
-    model.add(layers.Flatten(input_shape=input_shape))
-    model.add(layers.Dense(224, activation='relu'))
-    model.add(layers.Dropout(0.5))
-    model.add(layers.Dense(4095, activation='relu'))
-    model.add(layers.Dropout(0.5))
-    model.add(layers.Dense(1024, activation='relu'))
-    model.add(layers.Dropout(0.5))
-    model.add(layers.Dense(CLASS_COUNT, activation=activation))
-    model.summary()
-    return model
-"""
+data_augmentation = keras.Sequential(
+    [
+        layers.experimental.preprocessing.RandomFlip("horizontal"),
+        layers.experimental.preprocessing.RandomRotation(0.2)
+    ]
+)
 
 def create_model(input_shape, activation='softmax'):
     inputs = keras.Input(shape=input_shape)
-    # Image augmentation block
-    # x = data_augmentation(inputs)
-
-    # Entry block
     x = layers.experimental.preprocessing.Rescaling(1.0 / 255)(inputs)
 
     x = layers.Flatten()(x)
@@ -70,20 +58,20 @@ def compile_and_fit(model, training_set, validation_set):
 def MLP():
     training_set = tf.keras.preprocessing.image_dataset_from_directory(
         DATA_PATH + "\processed_images/training",
-        seed=1337,
+        seed=1436,
         image_size=IMAGE_SIZE,
         batch_size=BATCH_SIZE,
     )
     validation_set = tf.keras.preprocessing.image_dataset_from_directory(
         DATA_PATH + "\processed_images/validation",
-        seed=1337,
+        seed=1436,
         image_size=IMAGE_SIZE,
         batch_size=BATCH_SIZE,
     )
 
     test_set = tf.keras.preprocessing.image_dataset_from_directory(
         DATA_PATH + "\processed_images/testing",
-        seed=1337,
+        seed=1436,
         image_size=IMAGE_SIZE,
         batch_size=BATCH_SIZE,
     )
