@@ -112,20 +112,20 @@ class MLPHyperModel(HyperModel):
 
 def MLP_Hyper():
     training_set = tf.keras.preprocessing.image_dataset_from_directory(
-        DATA_PATH + "processed/training",
+        DATA_PATH + "processed_images/training",
         seed=1436,
         image_size=IMAGE_SIZE,
         batch_size=BATCH_SIZE,
     )
     validation_set = tf.keras.preprocessing.image_dataset_from_directory(
-        DATA_PATH + "processed/validation",
+        DATA_PATH + "processed_images/validation",
         seed=1436,
         image_size=IMAGE_SIZE,
         batch_size=BATCH_SIZE,
     )
 
     test_set = tf.keras.preprocessing.image_dataset_from_directory(
-        DATA_PATH + "processed/testing",
+        DATA_PATH + "processed_images/testing",
         seed=1436,
         image_size=IMAGE_SIZE,
         batch_size=BATCH_SIZE,
@@ -136,9 +136,9 @@ def MLP_Hyper():
 
     hyperModel = MLPHyperModel(IMAGE_SIZE + (3,), CLASS_COUNT, "softmax")
 
-    MAX_TRIALS = 25
+    MAX_TRIALS = 20
     EXECUTION_PER_TRIAL = 2
-    N_EPOCH_SEARCH = 50
+    N_EPOCH_SEARCH = 40
 
     tuner = RandomSearch(
         hyperModel,
