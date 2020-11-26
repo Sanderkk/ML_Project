@@ -5,11 +5,11 @@ from models.MLP import *
 from models.tuning.MLPHyperModel import *
 
 if __name__ == "__main__":
-    #process_data()
+    process_data()
 
     # CNN
-    #CNN()
+    # CNN()
     #CNN_Hyper()
 
-    MLP()
+    #MLP()
     #MLP_Hyper()

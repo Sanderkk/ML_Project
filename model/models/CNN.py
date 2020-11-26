@@ -66,16 +66,17 @@ def create_model(input_shape, activation='softmax'):
     outputs = layers.Dense(CLASS_COUNT, activation=activation)(x)
     return keras.Model(inputs, outputs)
 
-
+# Method for compiling and fitting the Keras model with training and validation sets
 def compile_and_fit(model, training_set, validation_set):
     callbacks = [
         #keras.callbacks.ModelCheckpoint("callbacks/save_at_{epoch}.h5"),
     ]
+    # Compiles the model
     model.compile(
         optimizer=optimizers.Adam(0.0012158),
         loss="sparse_categorical_crossentropy",#tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
         metrics=['accuracy'])
-
+    # Fit the model with the training and validation datasets
     history = model.fit_generator(
         training_set,
         epochs=CNN_EPOCHS,
@@ -84,7 +85,9 @@ def compile_and_fit(model, training_set, validation_set):
         )
     return history
 
+# Method for loading data, creating and compiling CNN network, and show results as a graph
 def CNN():
+    # Load data to be used with the model. Loading preprocessed training, validation and testing data
     training_set = tf.keras.preprocessing.image_dataset_from_directory(
         DATA_PATH + "processed_images/training",
         seed=1436,
@@ -111,14 +114,19 @@ def CNN():
         label_mode='int'
     )
 
+    # Prefetching training data set, and validation data set
     training_set = training_set.prefetch(buffer_size=64)
     validation_set = validation_set.prefetch(buffer_size=64)
 
+    # Create the CNN model and print model summary
     model = create_model(IMAGE_SIZE + (3,))
     print(model.summary())
+
+    # Show model fit history
     history = compile_and_fit(model, training_set, validation_set)
     show_model_history(history)
 
+    # Test model on the test dataset
     test_loss, test_acc = model.evaluate(test_set, verbose=2)
     print(test_acc)
 

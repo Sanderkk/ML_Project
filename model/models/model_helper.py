@@ -12,6 +12,7 @@ from data_processing.dataProcessing import *
 import numpy as np
 
 
+# Show the history of the model using matplotlib, drawing accuracy of training and validation dataset
 def show_model_history(history):
     plt.plot(history.history['accuracy'], label='accuracy')
     plt.plot(history.history['val_accuracy'], label='val_accuracy')
@@ -22,7 +23,6 @@ def show_model_history(history):
     plt.show()
 
 
-
 # Use the fitted model to predict a class of a image
 def load_trained_model(image, model_type="cnn"):
     if model_type == "cnn":
@@ -31,16 +31,19 @@ def load_trained_model(image, model_type="cnn"):
         model = load_model('../trained_models/MLP_Model')
     return model.predict(image)
 
+# Get the predicted class from a prediction
 def get_prediction_from_result(predict_result=[]):
     return predict_result.index(max(predict_result))
 
+# Load image from path
 def load_image(path):
     image = Image.open(path)
     image = np.asarray(image)
     input_arr = np.array([image])
-    return image
+    return input_arr
 
-def image_size_info(augment=True, base_path=ANNOTATIONS_PATH):
+# Print info of the size of images of the original dataset
+def image_size_info(augment=False, base_path=ANNOTATIONS_PATH):
     paths = get_file_paths(data_path=base_path, data_type=None)
     min_size_x = math.inf
     max_size_x = -math.inf
@@ -65,42 +68,18 @@ def image_size_info(augment=True, base_path=ANNOTATIONS_PATH):
     print("Min:", str(min_size_y))
     print("Max:", str(max_size_y))
 
-def model_predict(model_type="cnn", base_path=IMAGE_PROCESS_PATH_TRAINING):
-    paths = get_file_paths(data_path=base_path, data_type="training")
-    class_list = paths.keys()
-    actual_class = 0
-    for key, path_list in paths.items():
-        path = base_path + key + "/" + path_list[0]
-        break
-    image = load_image(path)
-    predict_result = load_trained_model(image, "cnn")
-    predicted_class = get_prediction_from_result(predict_result)
-    return predict_result, class_list, predicted_class, actual_class
-
-# model_predict()
-image_size_info()
-
-"""
-counter = 0
-for dir_path, image_path in paths.items():
-    for file_name in image_path:
-        doc = ET.parse(ANNOTATIONS_PATH + dir_path + "/" + file_name)
-        # Image
-        image = Image.open(IMAGE_DATA_PATH + dir_path + "/" + file_name + ".jpg")
-        image = crop_image(image, doc)
-        image = image.resize((128,128))
-        image = np.asarray(image)
-        image = image * 1./255
-
-        input_arr = np.array([image])
-        classes = model.predict(input_arr)
-        print(classes)
-        max_value = max(classes[0])
-        index = np.where(classes[0] == max_value)
-        print(index)
-        if (index == counter):
-            print("For class: ", dir_path)
-            print(classes)
-            break
-    counter += 1
-"""
+# Predict the class of a class from the test dataset
+# Input model_type of value cnn to test the cnn model, and mlp to test the mlp model
+def model_predict(model_type="cnn", actual_class_number=0, number_of_predictions=1, base_path=IMAGE_PROCESS_PATH_TRAINING):
+    predictions = []
+    paths = get_file_paths(data_path=base_path, data_type="testing")
+    class_list = list(paths.keys())
+    answer = (actual_class_number, class_list[actual_class_number])
+    class_dir = class_list[actual_class_number]
+    for file_name in paths[class_dir][:number_of_predictions]:
+        path = base_path + class_dir + "/" + file_name
+        image = load_image(path)
+        predict_result = load_trained_model(image, model_type)
+        predicted_class = get_prediction_from_result(predict_result.tolist()[0])
+        predictions.append((predicted_class, class_list[predicted_class]))
+    return predictions, answer

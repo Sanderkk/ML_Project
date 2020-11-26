@@ -1,11 +1,6 @@
-import os
-import math
-from PIL import Image
-from CONFIG import *
-from data_processing.dataProcessing import get_file_paths, image_generation, get_name_dir_mapping
+from data_processing.dataProcessing import *
 import matplotlib.pyplot as plt
 import numpy as np
-from keras.preprocessing.image import ImageDataGenerator, img_to_array
 
 # Return a list of number of images in each class. The number of classes used are deffined as class count
 # data_type null infers not filtering the data paths as training, validation and test-data paths
@@ -57,7 +52,10 @@ def show_augmented_images(count=9):
     keys = list(paths.keys())
     for key in keys:
         image = Image.open(IMAGE_DATA_PATH + key + "/" + paths[key][0] + ".jpg")
-        # TODO: Crop image!
+        doc = ET.parse(ANNOTATIONS_PATH + key + "/" + paths[key][0])
+        if IMAGE_CROP:
+            image = crop_image(image, doc)
+        image = image.resize(IMAGE_SIZE)
         image.resize((32, 32))
         it = image_generation(image)
         for i in range(count):
@@ -93,8 +91,3 @@ def get_data_statistic(class_count=0, data_type=None):
     count = data_count(paths)
     print("The total amount of data is:")
     print(count)
-
-
-if __name__ == "__main__":
-    show_data_examples(count=9)
-    show_augmented_images(count=9)

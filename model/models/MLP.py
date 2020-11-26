@@ -47,7 +47,7 @@ def compile_and_fit(model, training_set, validation_set):
         loss="sparse_categorical_crossentropy",#tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
         metrics=['accuracy'])
 
-    history = model.fit(
+    history = model.fit_generator(
         training_set,
         epochs=CNN_EPOCHS,
         callbacks=callbacks,
