@@ -26,9 +26,9 @@ def show_model_history(history):
 # Use the fitted model to predict a class of a image
 def load_trained_model(image, model_type="cnn"):
     if model_type == "cnn":
-        model = load_model('../trained_models/CNN_Model')
+        model = load_model('trained_models/CNN_Model')
     else:
-        model = load_model('../trained_models/MLP_Model')
+        model = load_model('trained_models/MLP_Model')
     return model.predict(image)
 
 # Get the predicted class from a prediction
