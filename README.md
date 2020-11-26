@@ -1,6 +1,21 @@
 # ML_Project
 Project task, Machine learning course at NTNU
 
+## How to reproduce
+The data used in this project is the "StandfordDogDataset" downloaded from Kaggle.
+The dataset can be found [here](https://www.kaggle.com/jessicali9530/stanford-dogs-dataset).
+1. Download the zip file of data from the link above. This should result in a `archive.zip` file with the data.
+2. Create a new directory `data` inside the `model` root directory.
+3. Inside the newly created `data` directory, create a new directory named `StanfordDogs`
+4. Copy the zip file of the downloaded dataset to the `StanfordDogs` directory.
+5. Unzip the file. This should result in either a new directory named `archive`, or two folders named `annotations` and `images`.
+6. Edit the DATA_PATH variable in the model/CONFIG.py file to point to your ML_Project/model/data/ folder. Make sure it ends with a "/".
+7. Run the main.ipynb file using 'jupyter notebook main.ipynb' and run the code in the notebook
+
+
+When the data is downloaded, the config file need to be changed to link to the data. This is explained in the `CONFIG` section. 
+
+
 ## Data
 The data used in this project is the "StandfordDogDataset" downloaded from Kaggle.
 The dataset can be found [here](https://www.kaggle.com/jessicali9530/stanford-dogs-dataset).
