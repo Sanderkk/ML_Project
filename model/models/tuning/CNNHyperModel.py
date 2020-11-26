@@ -30,16 +30,16 @@ class CNNHyperModel(HyperModel):
         x = layers.Conv2D(
             filters=hp.Choice(
                 'conv_filters_1',
-                values=[64, 72, 96, 112],
-                default=96,
+                values=[32, 64, 96, 128],
+                default=64,
             ),
             kernel_size=hp.Choice(
-                'num_filters',
-                values=[8,9,11,12],
-                default=11,
+                'kernel_size_1',
+                values=[3,5,8],
+                default=5,
             ),
-            strides=4,
-            padding="valid"
+            strides=1,
+            padding="same"
         )(x)
         x = layers.Activation("relu")(x)
         x = layers.MaxPooling2D(3, strides=2)(x)
@@ -58,15 +58,18 @@ class CNNHyperModel(HyperModel):
         x = layers.Conv2D(
             filters=hp.Choice(
                 'conv_filters_2',
-                values=[256, 384, 512],
-                default=384,
+                values=[64, 128, 256, 384],
+                default=128,
             ),
-            kernel_size=5,
+            kernel_size=hp.Choice(
+                'kernel_size_2',
+                values=[3, 5, 8],
+                default=3,
+            ),
             strides=1,
-            padding="valid"
+            padding="same"
         )(x)
         x = layers.Activation("relu")(x)
-        x = layers.MaxPooling2D(3, strides=2)(x)
         x = layers.Dropout(
             hp.Float(
                 'dropout_2',
@@ -83,9 +86,13 @@ class CNNHyperModel(HyperModel):
             filters=hp.Choice(
                 'conv_filters_3',
                 values=[256, 384, 512],
-                default=384,
+                default=256,
             ),
-            kernel_size=3,
+            kernel_size=hp.Choice(
+                'kernel_size_3',
+                values=[3, 5, 8],
+                default=3,
+            ),
             strides=1,
             padding="valid"
         )(x)
@@ -106,13 +113,14 @@ class CNNHyperModel(HyperModel):
             filters=hp.Choice(
                 'conv_filters_4',
                 values=[256, 384, 512],
-                default=384,
+                default=256,
             ),
             kernel_size=3,
             strides=1,
             padding="valid"
         )(x)
         x = layers.Activation("relu")(x)
+        x = layers.MaxPooling2D(3, strides=2)(x)
         x = layers.Dropout(
             hp.Float(
                 'dropout_4',
@@ -125,23 +133,17 @@ class CNNHyperModel(HyperModel):
         x = layers.BatchNormalization()(x)
 
         # Convolutional layer 5
-        x = layers.Conv2D(256, kernel_size=3, strides=1, padding="valid")(x)
-        x = layers.Activation("relu")(x)
-        x = layers.BatchNormalization()(x)
-
-        x = layers.Flatten()(x)
-
-        # Dense layer 1
-        x = layers.Dense(
-            units=hp.Int(
-                'dense_units_1',
-                min_value=2048,
-                max_value=4096,
-                step=512,
-                default=4096
+        x = layers.Conv2D(
+            filters=hp.Choice(
+                'conv_filters_5',
+                values=[256, 384, 512],
+                default=256,
             ),
-            activation='relu'
+            kernel_size=3,
+            strides=1,
+            padding="valid"
         )(x)
+        x = layers.Activation("relu")(x)
         x = layers.Dropout(
             hp.Float(
                 'dropout_5',
@@ -153,17 +155,18 @@ class CNNHyperModel(HyperModel):
         )(x)
         x = layers.BatchNormalization()(x)
 
-        # Dense layer 2
-        x = layers.Dense(
-            units=hp.Int(
-                'dense_units_2',
-                min_value=2048,
-                max_value=4096,
-                step=512,
-                default=4096
+        # Convolutional layer 6
+        x = layers.Conv2D(
+            filters=hp.Choice(
+                'conv_filters_6',
+                values=[256, 384, 512],
+                default=256,
             ),
-            activation='relu'
+            kernel_size=3,
+            strides=1,
+            padding="valid"
         )(x)
+        x = layers.Activation("relu")(x)
         x = layers.Dropout(
             hp.Float(
                 'dropout_6',
@@ -175,20 +178,68 @@ class CNNHyperModel(HyperModel):
         )(x)
         x = layers.BatchNormalization()(x)
 
-        # Dense layer 3
+        # Convolutional layer 7
+        x = layers.Conv2D(
+            filters=hp.Choice(
+                'conv_filters_7',
+                values=[256, 384, 512],
+                default=256,
+            ),
+            kernel_size=3,
+            strides=1,
+            padding="valid"
+        )(x)
+        x = layers.Activation("relu")(x)
+        x = layers.MaxPooling2D(2, strides=2)(x)
+        x = layers.Dropout(
+            hp.Float(
+                'dropout_7',
+                min_value=0.2,
+                max_value=0.5,
+                default=0.3,
+                step=0.05
+            )
+        )(x)
+        x = layers.BatchNormalization()(x)
+
+        x = layers.Flatten()(x)
+
+        # Dense layer 1
         x = layers.Dense(
             units=hp.Int(
-                'dense_units_3',
-                min_value=1024,
+                'dense_units_1',
+                min_value=256,
                 max_value=2048,
-                step=512,
-                default=1024
+                step=256,
+                default=512
             ),
             activation='relu'
         )(x)
         x = layers.Dropout(
             hp.Float(
-                'dropout_7',
+                'dropout_8',
+                min_value=0.2,
+                max_value=0.5,
+                default=0.4,
+                step=0.05
+            )
+        )(x)
+        x = layers.BatchNormalization()(x)
+
+        # Dense layer 2
+        x = layers.Dense(
+            units=hp.Int(
+                'dense_units_2',
+                min_value=128,
+                max_value=1024,
+                step=128,
+                default=256
+            ),
+            activation='relu'
+        )(x)
+        x = layers.Dropout(
+            hp.Float(
+                'dropout_9',
                 min_value=0.2,
                 max_value=0.5,
                 default=0.3,

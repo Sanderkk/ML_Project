@@ -9,7 +9,7 @@ The dataset can be found [here](https://www.kaggle.com/jessicali9530/stanford-do
 3. Inside the newly created `data` directory, create a new directory named `StanfordDogs`
 4. Copy the zip file of the downloaded dataset to the `StanfordDogs` directory.
 5. Unzip the file. This should result in either a new directory named `archive`, or two folders named `annotations` and `images`.
-6. When the data is downloaded, the config file need to be changes to link to the data. This is explained in the `CONFIG` section. 
+6. When the data is downloaded, the config file need to be changed to link to the data. This is explained in the `CONFIG` section. 
 
 When the data is augmented it creates a new folder named `processed_data` in this data directory.
 

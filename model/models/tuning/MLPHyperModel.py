@@ -28,10 +28,10 @@ class MLPHyperModel(HyperModel):
         x = layers.Dense(
             units=hp.Int(
                 'dense_units_1',
-                min_value=256,
-                max_value=4096,
+                min_value=512,
+                max_value=2048,
                 step=128,
-                default=512
+                default=1024
             ),
             activation='relu'
         )(x)
@@ -51,7 +51,7 @@ class MLPHyperModel(HyperModel):
             units=hp.Int(
                 'dense_units_2',
                 min_value=256,
-                max_value=4096,
+                max_value=2048,
                 step=128,
                 default=512
             ),
@@ -73,7 +73,7 @@ class MLPHyperModel(HyperModel):
             units=hp.Int(
                 'dense_units_3',
                 min_value=256,
-                max_value=4096,
+                max_value=2048,
                 step=128,
                 default=512
             ),
