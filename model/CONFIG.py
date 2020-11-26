@@ -9,7 +9,7 @@ IMAGE_CROP=True
 
 # Network config
 BATCH_SIZE=64
-CNN_EPOCHS=50
+NETWORK_EPOCHS=50
 
 # Data location config
 DATA_PATH = "C:/dev/ML_Project/model/data/"

@@ -49,7 +49,7 @@ def compile_and_fit(model, training_set, validation_set):
 
     history = model.fit_generator(
         training_set,
-        epochs=CNN_EPOCHS,
+        epochs=NETWORK_EPOCHS,
         callbacks=callbacks,
         validation_data=validation_set
         )

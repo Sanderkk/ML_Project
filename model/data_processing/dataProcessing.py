@@ -146,7 +146,7 @@ def split_images(paths, data_type="training", crop=IMAGE_CROP, augment=False, na
                 image_generator_it = image_generation(image)
                 save_image(image_generator_it, save_data_path + "/" + dir_path + "/" + path)
             else:
-                image.save(save_data_path + "/" + dir_path + "/" + path + ".jpg")
+                image.save(save_data_path + dir_path + "/" + path + ".jpg")
 
 # Creates a list of directory name to dog breed name mappings
 def get_name_dir_mapping():
@@ -162,7 +162,7 @@ def get_name_dir_mapping():
 # Main method for processing the dataset, creating training, validation and test datasets.
 def process_data():
     name_dir_map = get_name_dir_mapping()
-    os.mkdir(DATA_PATH + "/processed_images/")
+    os.mkdir(DATA_PATH + "processed_images/")
     # Get paths
     training_set_paths, validation_set_paths, test_set_paths = get_file_split_paths(name_dir_map)
     # Split data
