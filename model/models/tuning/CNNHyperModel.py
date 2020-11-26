@@ -94,7 +94,7 @@ class CNNHyperModel(HyperModel):
                 default=3,
             ),
             strides=1,
-            padding="valid"
+            padding="same"
         )(x)
         x = layers.Activation("relu")(x)
         x = layers.Dropout(
@@ -117,7 +117,7 @@ class CNNHyperModel(HyperModel):
             ),
             kernel_size=3,
             strides=1,
-            padding="valid"
+            padding="same"
         )(x)
         x = layers.Activation("relu")(x)
         x = layers.MaxPooling2D(3, strides=2)(x)
@@ -141,7 +141,7 @@ class CNNHyperModel(HyperModel):
             ),
             kernel_size=3,
             strides=1,
-            padding="valid"
+            padding="same"
         )(x)
         x = layers.Activation("relu")(x)
         x = layers.Dropout(
@@ -164,7 +164,7 @@ class CNNHyperModel(HyperModel):
             ),
             kernel_size=3,
             strides=1,
-            padding="valid"
+            padding="same"
         )(x)
         x = layers.Activation("relu")(x)
         x = layers.Dropout(
@@ -187,7 +187,7 @@ class CNNHyperModel(HyperModel):
             ),
             kernel_size=3,
             strides=1,
-            padding="valid"
+            padding="same"
         )(x)
         x = layers.Activation("relu")(x)
         x = layers.MaxPooling2D(2, strides=2)(x)
