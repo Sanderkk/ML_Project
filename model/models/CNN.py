@@ -49,7 +49,7 @@ def create_model(input_shape, activation='softmax'):
 
     x = layers.Conv2D(256, kernel_size=3, strides=1, padding="same")(x)
     x = layers.Activation("relu")(x)
-    x = layers.MaxPooling2D()(x)
+    x = layers.MaxPooling2D(2, strides=2)(x)
     x = layers.Dropout(0.25)(x)
     x = layers.BatchNormalization()(x)
 

@@ -40,6 +40,31 @@ def load_image(path):
     input_arr = np.array([image])
     return image
 
+def image_size_info(augment=True, base_path=ANNOTATIONS_PATH):
+    paths = get_file_paths(data_path=base_path, data_type=None)
+    min_size_x = math.inf
+    max_size_x = -math.inf
+    min_size_y = math.inf
+    max_size_y = -math.inf
+    for key, image_list in paths.items():
+        for i in range(len(image_list)):
+            image_path = IMAGE_DATA_PATH + key + "/" + image_list[i] + ".jpg"
+            image = Image.open(image_path)
+            if (augment):
+                doc = ET.parse(ANNOTATIONS_PATH + key + "/" + image_list[i])
+                image = crop_image(image, doc)
+            (x_size, y_size) = image.size
+            min_size_x = x_size if x_size < min_size_x else min_size_x
+            max_size_x = x_size if x_size > max_size_x else max_size_x
+            min_size_y = y_size if y_size < min_size_y else min_size_y
+            max_size_y = y_size if y_size > max_size_y else max_size_y
+    print("Size of x coordinates:")
+    print("Min:", str(min_size_x))
+    print("Max:", str(max_size_x))
+    print("Size of y coordinates:")
+    print("Min:", str(min_size_y))
+    print("Max:", str(max_size_y))
+
 def model_predict(model_type="cnn", base_path=IMAGE_PROCESS_PATH_TRAINING):
     paths = get_file_paths(data_path=base_path, data_type="training")
     class_list = paths.keys()
@@ -53,7 +78,7 @@ def model_predict(model_type="cnn", base_path=IMAGE_PROCESS_PATH_TRAINING):
     return predict_result, class_list, predicted_class, actual_class
 
 # model_predict()
-
+image_size_info()
 
 """
 counter = 0
