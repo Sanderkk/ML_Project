@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 def breed_name_converter(name):
     return " ".join([breed.capitalize() for breed in name.split("_")])
 
-def get_file_paths(data_path=ANNOTATIONS_PATH, data_type="training", name_dir_map={}):
+def get_file_paths(data_path=ANNOTATIONS_PATH, data_type="training", name_dir_map={}, class_count=0):
     paths = {}
     dirs = os.listdir(data_path)
     # Use only the given classes
@@ -33,15 +33,17 @@ def get_file_paths(data_path=ANNOTATIONS_PATH, data_type="training", name_dir_ma
                 new_dirs.append(breed_name)
         dirs = new_dirs
 
-    # Tak only part of the data as training or test data
-    for dir in dirs[:CLASS_COUNT] if len(name_dir_map) != 0 else dirs:
+    # Filter amount of data
+    for dir in dirs[:CLASS_COUNT] if len(name_dir_map) != 0 else (dirs[:class_count] if class_count != 0 else dirs):
         paths[dir] = []
         files = os.listdir(data_path + dir)
 
         training_set_splitter = math.floor(len(files) * TRAINING_SET_SIZE)
         validation_set_splitter = math.floor(training_set_splitter * VALIDATION_SET_SIZE)
         file_paths = []
-        if data_type=="training":
+        if data_type == None:
+            file_paths = files[:]
+        elif data_type=="training":
             file_paths = files[:training_set_splitter-validation_set_splitter]
         elif data_type=="validation":
             file_paths = files[training_set_splitter-validation_set_splitter:training_set_splitter]
@@ -131,7 +133,7 @@ def split_images(paths, data_type="training", crop=IMAGE_CROP, augment=False, da
 
 def get_name_dir_mapping():
     name_dir_map = {}
-    paths = get_file_paths(data_type="training")
+    paths = get_file_paths(data_type=None)
     for dir_path, image_path in paths.items():
         path = image_path[0]
         doc = ET.parse(ANNOTATIONS_PATH + dir_path + "/" + path)

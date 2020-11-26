@@ -21,7 +21,6 @@ def create_model(input_shape, activation='softmax'):
     x = layers.Dropout(0.25)(x)
     x = layers.BatchNormalization()(x)
 
-    ################ Test ########################
     x = layers.Conv2D(128, kernel_size=3, strides=1, padding="same")(x)
     x = layers.Activation("relu")(x)
     x = layers.Dropout(0.3)(x)
@@ -31,7 +30,6 @@ def create_model(input_shape, activation='softmax'):
     x = layers.Activation("relu")(x)
     x = layers.Dropout(0.3)(x)
     x = layers.BatchNormalization()(x)
-    #################
 
     x = layers.Conv2D(256, kernel_size=3, strides=1, padding="same")(x)
     x = layers.Activation("relu")(x)
@@ -75,7 +73,6 @@ def compile_and_fit(model, training_set, validation_set):
     ]
     model.compile(
         optimizer=optimizers.Adam(0.0012158),
-        # tf.keras.losses.Hinge()
         loss="sparse_categorical_crossentropy",#tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
         metrics=['accuracy'])
 
