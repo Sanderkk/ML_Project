@@ -3,6 +3,6 @@ pandas
 Pillow
 progressbar2
 tensorflow==2.3.1
-keras
+keras==2.4.3
 matplotlib
 keras-tuner
